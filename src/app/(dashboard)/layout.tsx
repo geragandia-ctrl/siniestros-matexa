@@ -9,11 +9,18 @@ import { Usuario } from '@/types'
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter()
   const pathname = usePathname()
-  const [perfil, setPerfil]       = useState<Usuario | null>(null)
-  const [loading, setLoading]     = useState(true)
+  const [perfil, setPerfil]           = useState<Usuario | null>(null)
+  const [loading, setLoading]         = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isMobile, setIsMobile]       = useState(false)
 
-  useEffect(() => { checkAuth() }, [])
+  useEffect(() => {
+    checkAuth()
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   async function checkAuth() {
     const { data: { session } } = await supabase.auth.getSession()
@@ -47,34 +54,49 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navItems = esTaller ? navTaller : navPerito
 
   if (loading) return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <p className="text-sm text-gray-400 font-dm">Cargando...</p>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#F7F8FA' }}>
+      <p style={{ fontSize: 14, color: '#8896A8', fontFamily: 'DM Sans, sans-serif' }}>Cargando...</p>
     </div>
   )
 
+  const sidebarWidth = 240
+
   return (
-    <div className="flex min-h-screen">
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#F7F8FA' }}>
 
       {/* Overlay mobile */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/40 z-[49]" onClick={() => setSidebarOpen(false)} />
+      {sidebarOpen && isMobile && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 49 }}
+        />
       )}
 
       {/* SIDEBAR */}
-      <aside className={`w-60 bg-neutral-900 flex flex-col fixed top-0 left-0 bottom-0 z-50 transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+      <aside style={{
+        width: sidebarWidth,
+        background: '#0F1623',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'fixed',
+        top: 0, left: 0, bottom: 0,
+        zIndex: 50,
+        transform: isMobile && !sidebarOpen ? `translateX(-${sidebarWidth}px)` : 'translateX(0)',
+        transition: 'transform .3s ease',
+      }}>
 
         {/* Logo */}
-        <div className="flex items-center gap-2.5 px-5 py-5 border-b border-white/[0.07]">
-          <div className="w-[34px] h-[34px] bg-brand-medium rounded-[9px] flex items-center justify-center font-sora text-base font-extrabold text-white flex-shrink-0">M</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '20px 20px 16px', borderBottom: '1px solid rgba(255,255,255,.07)' }}>
+          <div style={{ width: 36, height: 36, background: '#195e63', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Sora, sans-serif', fontSize: 16, fontWeight: 800, color: 'white', flexShrink: 0 }}>M</div>
           <div>
-            <div className="font-sora text-[17px] font-extrabold text-white leading-tight">Matexa</div>
-            <div className="text-[10px] text-white/35 font-semibold tracking-wide">siniestros</div>
+            <div style={{ fontFamily: 'Sora, sans-serif', fontSize: 17, fontWeight: 800, color: 'white', lineHeight: 1.2 }}>Matexa</div>
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,.35)', fontWeight: 600, letterSpacing: .5 }}>siniestros</div>
           </div>
         </div>
 
         {/* Nav */}
-        <div className="px-3 pt-5 pb-2">
-          <div className="text-[10px] font-bold tracking-[1.5px] uppercase text-white/25 px-2 mb-1.5">
+        <div style={{ padding: '20px 12px 8px' }}>
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', padding: '0 8px', marginBottom: 6 }}>
             {esTaller ? 'Taller' : 'Compañía'}
           </div>
           {navItems.map(item => {
@@ -83,9 +105,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13.5px] font-medium mb-0.5 transition-all duration-150 no-underline ${active ? 'bg-brand-medium text-white' : 'text-white/45 hover:bg-white/[0.06] hover:text-white/85'}`}
+                onClick={() => isMobile && setSidebarOpen(false)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 10px', borderRadius: 8,
+                  fontSize: 14, fontWeight: 500,
+                  color: active ? 'white' : 'rgba(255,255,255,.45)',
+                  background: active ? '#195e63' : 'transparent',
+                  textDecoration: 'none', marginBottom: 2,
+                  transition: 'all .18s',
+                }}
               >
-                <span className="w-[18px] text-center text-[15px]">{item.icon}</span>
+                <span style={{ width: 20, textAlign: 'center', fontSize: 16 }}>{item.icon}</span>
                 <span>{item.label}</span>
               </Link>
             )
@@ -93,19 +124,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
 
         {/* Bottom */}
-        <div className="mt-auto p-3 border-t border-white/[0.07]">
-          <div className="flex items-center gap-2.5 p-2.5 rounded-lg">
-            <div className="w-[34px] h-[34px] rounded-full bg-brand-medium flex items-center justify-center text-[13px] font-bold text-white flex-shrink-0">
+        <div style={{ marginTop: 'auto', padding: 12, borderTop: '1px solid rgba(255,255,255,.07)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 10px', borderRadius: 8 }}>
+            <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#195e63', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: 'white', flexShrink: 0 }}>
               {perfil?.nombre ? iniciales(perfil.nombre) : '?'}
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[13px] font-semibold text-white truncate">{perfil?.nombre || ''}</div>
-              <div className="text-[11px] text-white/35">{esTaller ? 'Taller' : 'Perito'}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{perfil?.nombre || ''}</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,.35)' }}>{esTaller ? 'Taller' : 'Perito'}</div>
             </div>
           </div>
           <button
             onClick={cerrarSesion}
-            className="w-full mt-2 py-2 bg-white/[0.08] border-0 rounded-lg text-white/50 text-[13px] cursor-pointer hover:bg-white/[0.12] transition-colors"
+            style={{ width: '100%', marginTop: 8, padding: '9px', background: 'rgba(255,255,255,.08)', border: 'none', borderRadius: 8, color: 'rgba(255,255,255,.5)', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}
           >
             Cerrar sesión
           </button>
@@ -113,28 +144,53 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* MAIN */}
-      <div className="md:ml-60 flex-1 flex flex-col min-h-screen">
+      <div style={{
+        marginLeft: isMobile ? 0 : sidebarWidth,
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+        transition: 'margin-left .3s ease',
+      }}>
 
         {/* Header */}
-        <header className="h-[60px] bg-white border-b border-neutral-border flex items-center px-7 sticky top-0 z-40 gap-3">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="md:hidden bg-transparent border-0 cursor-pointer text-xl text-neutral-secondary"
-          >☰</button>
-          <div className="flex-1 flex items-center gap-1.5 text-[13px] text-neutral-secondary">
+        <header style={{
+          height: 60,
+          background: 'white',
+          borderBottom: '1px solid #E2E6EC',
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0 20px',
+          position: 'sticky',
+          top: 0,
+          zIndex: 40,
+          gap: 12,
+        }}>
+          {/* Hamburguesa — solo mobile */}
+          {isMobile && (
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: '#4A5568', padding: 4, display: 'flex', alignItems: 'center' }}
+            >
+              ☰
+            </button>
+          )}
+
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: '#8896A8' }}>
             <span>{esTaller ? 'Taller' : 'Perito'}</span>
-            <span className="text-neutral-border">›</span>
-            <span className="font-semibold text-neutral-900">
+            <span style={{ color: '#C8D0DC' }}>›</span>
+            <span style={{ fontWeight: 600, color: '#0F1623' }}>
               {navItems.find(n => pathname === n.href || pathname.startsWith(n.href + '/'))?.label || ''}
             </span>
           </div>
-          <div className="w-9 h-9 rounded-full bg-brand-light flex items-center justify-center text-[13px] font-bold text-brand-dark cursor-pointer">
+
+          <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#eaf4f4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: '#063940', cursor: 'pointer', flexShrink: 0 }}>
             {perfil?.nombre ? iniciales(perfil.nombre) : '?'}
           </div>
         </header>
 
-        {/* Contenido de la página */}
-        <main className="p-7 flex-1">
+        {/* Contenido */}
+        <main style={{ padding: isMobile ? '20px 16px' : 28, flex: 1 }}>
           {children}
         </main>
       </div>
