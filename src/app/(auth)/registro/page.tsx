@@ -1,18 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-export default function RegistroPage() {
+function RegistroForm() {
   const router       = useRouter()
   const searchParams = useSearchParams()
-  const tipoParam    = searchParams.get('tipo') // 'taller' o 'perito'
+  const tipoParam    = searchParams.get('tipo')
 
-  const [tipo, setTipo]         = useState<'taller' | 'perito'>(tipoParam === 'perito' ? 'perito' : 'taller')
+  const [tipo, setTipo]           = useState<'taller' | 'perito'>(tipoParam === 'perito' ? 'perito' : 'taller')
   const [companias, setCompanias] = useState<any[]>([])
-  const [loading, setLoading]   = useState(false)
-  const [error, setError]       = useState('')
+  const [loading, setLoading]     = useState(false)
+  const [error, setError]         = useState('')
 
   // Campos taller
   const [nombreTaller, setNombreTaller] = useState('')
@@ -234,5 +234,12 @@ export default function RegistroPage() {
 
       </div>
     </div>
+  )
+}
+export default function RegistroPage() {
+  return (
+    <Suspense>
+      <RegistroForm />
+    </Suspense>
   )
 }
