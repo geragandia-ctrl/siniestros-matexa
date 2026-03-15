@@ -9,14 +9,21 @@ export default function PeritoDetallePeritacion() {
   const router = useRouter()
   const { id } = useParams<{ id: string }>()
 
-  const [peritacion, setPeritacion] = useState<any>(null)
-  const [danos, setDanos]           = useState<any[]>([])
-  const [fotos, setFotos]           = useState<any[]>([])
-  const [loading, setLoading]       = useState(true)
-  const [confirmando, setConfirmando] = useState(false)
+  const [peritacion, setPeritacion]     = useState<any>(null)
+  const [danos, setDanos]               = useState<any[]>([])
+  const [fotos, setFotos]               = useState<any[]>([])
+  const [loading, setLoading]           = useState(true)
+  const [confirmando, setConfirmando]   = useState(false)
   const [fotoAmpliada, setFotoAmpliada] = useState<string | null>(null)
+  const [isMobile, setIsMobile]         = useState(false)
 
-  useEffect(() => { cargarDatos() }, [id])
+  useEffect(() => {
+    cargarDatos()
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [id])
 
   async function cargarDatos() {
     const [{ data: per }, { data: danosData }, { data: fotosData }] = await Promise.all([
@@ -26,7 +33,6 @@ export default function PeritoDetallePeritacion() {
       supabase.from('danos').select('*').eq('peritacion_id', id).order('orden'),
       supabase.from('fotos').select('*').eq('peritacion_id', id).order('created_at'),
     ])
-
     setPeritacion(per)
     setDanos(danosData || [])
     setFotos(fotosData || [])
@@ -56,6 +62,36 @@ export default function PeritoDetallePeritacion() {
     return new Date(fecha).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
   }
 
+  function exportarExcel() {
+    const taller = peritacion.taller
+    const datosGenerales = [
+      ['PERITACIÓN DE SINIESTRO'], [],
+      ['Taller',          taller?.nombre_fantasia || ''],
+      ['Razón social',    taller?.razon_social    || ''],
+      ['Dirección',       taller?.direccion       || ''],
+      ['Teléfono',        taller?.telefono        || ''],
+      ['CUIT',            taller?.cuit            || ''],
+      [],
+      ['Compañía',        peritacion.compania?.nombre  || ''],
+      ['Vehículo',        peritacion.vehiculo          || ''],
+      ['Patente',         peritacion.patente           || ''],
+      ['Cliente',         peritacion.cliente           || ''],
+      ['N° Siniestro',    peritacion.nro_siniestro     || ''],
+      ['Tipo',            peritacion.tipo === 'chapa_pintura' ? 'Chapa y pintura' : peritacion.tipo === 'granizo' ? 'Granizo' : ''],
+      ['Fecha envío',     peritacion.fecha_envio     ? new Date(peritacion.fecha_envio).toLocaleDateString('es-AR')     : ''],
+      ['Fecha recepción', peritacion.fecha_recepcion ? new Date(peritacion.fecha_recepcion).toLocaleDateString('es-AR') : ''],
+    ]
+    const encabezados = ['Acción', 'Pieza', 'Días chapa', 'Paños pintura', 'Hs mecánica', 'Otros ($)']
+    const filasDanos  = danos.map(d => [d.accion, d.pieza, d.dias_chapa, d.panos_pintura, d.hs_mecanica, d.otros])
+    const filaTotales = ['TOTALES', '', totalChapa, totalPanos, totalMecanica, totalOtros]
+    const filaManoObra = peritacion.mano_obra_total ? [[], ['Mano de obra total', '', '', '', '', peritacion.mano_obra_total]] : []
+    const danosSheet = [encabezados, ...filasDanos, [], filaTotales, ...filaManoObra]
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(datosGenerales), 'Datos')
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(danosSheet), 'Daños')
+    XLSX.writeFile(wb, `Peritacion_${peritacion.patente || peritacion.id.slice(0, 6)}_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.xlsx`)
+  }
+
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
       <p style={{ fontSize: 14, color: '#8896A8' }}>Cargando...</p>
@@ -74,66 +110,28 @@ export default function PeritoDetallePeritacion() {
 
   const taller = peritacion.taller
 
-  function exportarExcel() {
-  const taller = peritacion.taller
-
-  // Hoja 1 — Datos generales
-  const datosGenerales = [
-    ['PERITACIÓN DE SINIESTRO'],
-    [],
-    ['Taller',         taller?.nombre_fantasia || ''],
-    ['Razón social',   taller?.razon_social    || ''],
-    ['Dirección',      taller?.direccion       || ''],
-    ['Teléfono',       taller?.telefono        || ''],
-    ['CUIT',           taller?.cuit            || ''],
-    [],
-    ['Compañía',       peritacion.compania?.nombre || ''],
-    ['Vehículo',       peritacion.vehiculo     || ''],
-    ['Patente',        peritacion.patente      || ''],
-    ['Cliente',        peritacion.cliente      || ''],
-    ['N° Siniestro',   peritacion.nro_siniestro || ''],
-    ['Tipo',           peritacion.tipo === 'chapa_pintura' ? 'Chapa y pintura' : peritacion.tipo === 'granizo' ? 'Granizo' : ''],
-    ['Fecha envío',    peritacion.fecha_envio ? new Date(peritacion.fecha_envio).toLocaleDateString('es-AR') : ''],
-    ['Fecha recepción',peritacion.fecha_recepcion ? new Date(peritacion.fecha_recepcion).toLocaleDateString('es-AR') : ''],
-  ]
-
-  // Hoja 2 — Tabla de daños
-  const encabezados = ['Acción', 'Pieza', 'Días chapa', 'Paños pintura', 'Hs mecánica', 'Otros ($)']
-  const filasDanos  = danos.map(d => [d.accion, d.pieza, d.dias_chapa, d.panos_pintura, d.hs_mecanica, d.otros])
-  const filaTotales = ['TOTALES', '', totalChapa, totalPanos, totalMecanica, totalOtros]
-  const filaManoObra = peritacion.mano_obra_total ? [[''], ['Mano de obra total', '', '', '', '', peritacion.mano_obra_total]] : []
-
-  const danosSheet = [encabezados, ...filasDanos, [], filaTotales, ...filaManoObra]
-
-  // Crear libro
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(datosGenerales), 'Datos')
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(danosSheet), 'Daños')
-
-  const nombreArchivo = `Peritacion_${peritacion.patente || peritacion.id.slice(0, 6)}_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.xlsx`
-  XLSX.writeFile(wb, nombreArchivo)
-}
-
   return (
     <div style={{ maxWidth: 900, margin: '0 auto' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
           <button onClick={() => router.push('/perito/peritaciones')}
-            style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 10, padding: '8px 14px', fontSize: 13, color: '#4A5568', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+            style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 10, padding: '8px 14px', fontSize: 13, color: '#4A5568', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', flexShrink: 0 }}>
             ← Volver
           </button>
-          <div>
-            <h1 style={{ fontFamily: 'Sora, sans-serif', fontSize: 20, fontWeight: 700, color: '#0F1623', letterSpacing: -.3, marginBottom: 4 }}>
-              {peritacion.vehiculo || 'Vehículo sin definir'}
+          <div style={{ minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <h1 style={{ fontFamily: 'Sora, sans-serif', fontSize: isMobile ? 17 : 20, fontWeight: 700, color: '#0F1623', letterSpacing: -.3 }}>
+                {peritacion.vehiculo || 'Vehículo sin definir'}
+              </h1>
               {peritacion.patente && (
-                <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 14, color: '#063940', marginLeft: 10, background: '#eaf4f4', padding: '2px 10px', borderRadius: 8 }}>
+                <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, color: '#063940', background: '#eaf4f4', padding: '2px 10px', borderRadius: 8 }}>
                   {peritacion.patente}
                 </span>
               )}
-            </h1>
-            <div style={{ fontSize: 13, color: '#8896A8' }}>
+            </div>
+            <div style={{ fontSize: 13, color: '#8896A8', marginTop: 4 }}>
               {peritacion.compania?.nombre}
               {peritacion.nro_siniestro && ` · Stro: ${peritacion.nro_siniestro}`}
               {peritacion.fecha_envio && ` · Enviada el ${formatFecha(peritacion.fecha_envio)}`}
@@ -141,48 +139,45 @@ export default function PeritoDetallePeritacion() {
           </div>
         </div>
 
-<button
-  onClick={exportarExcel}
-  style={{ background: 'white', color: '#063940', border: '1.5px solid #063940', borderRadius: 12, padding: '12px 24px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}
->
-  📊 Exportar Excel
-</button>
-
-        {/* Confirmar recepción */}
-        {peritacion.estado === 'enviada' ? (
-          <button onClick={confirmarRecepcion} disabled={confirmando}
-            style={{ background: '#0DBF7E', color: 'white', border: 'none', borderRadius: 12, padding: '12px 24px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
-            {confirmando ? 'Confirmando...' : '✓ Confirmar recepción'}
+        {/* Botones */}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <button onClick={exportarExcel}
+            style={{ flex: isMobile ? 1 : undefined, background: 'white', color: '#063940', border: '1.5px solid #063940', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+            📊 Excel
           </button>
-        ) : (
-          <div style={{ background: '#E6FBF3', border: '1px solid #0DBF7E', borderRadius: 12, padding: '10px 20px', fontSize: 13, fontWeight: 700, color: '#047857' }}>
-            ✓ Recibida el {peritacion.fecha_recepcion ? formatFecha(peritacion.fecha_recepcion) : ''}
-          </div>
-        )}
+          {peritacion.estado === 'enviada' ? (
+            <button onClick={confirmarRecepcion} disabled={confirmando}
+              style={{ flex: isMobile ? 1 : undefined, background: '#0DBF7E', color: 'white', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+              {confirmando ? 'Confirmando...' : '✓ Confirmar recepción'}
+            </button>
+          ) : (
+            <div style={{ background: '#E6FBF3', border: '1px solid #0DBF7E', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, color: '#047857' }}>
+              ✓ Recibida el {peritacion.fecha_recepcion ? formatFecha(peritacion.fecha_recepcion) : ''}
+            </div>
+          )}
+        </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-        {/* Datos del taller + vehículo */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        {/* Datos taller + vehículo */}
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
 
           {/* Taller */}
-          <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 18, padding: 24 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#8896A8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 }}>
-              Datos del taller
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+          <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 18, padding: isMobile ? 18 : 24 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#8896A8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 14 }}>Datos del taller</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
               {taller?.logo_url ? (
-                <img src={taller.logo_url} alt="Logo" style={{ width: 56, height: 56, borderRadius: 10, objectFit: 'contain', border: '1px solid #E2E6EC', padding: 4 }} />
+                <img src={taller.logo_url} alt="Logo" style={{ width: 52, height: 52, borderRadius: 10, objectFit: 'contain', border: '1px solid #E2E6EC', padding: 4 }} />
               ) : (
-                <div style={{ width: 56, height: 56, borderRadius: 10, background: '#eaf4f4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>🏭</div>
+                <div style={{ width: 52, height: 52, borderRadius: 10, background: '#eaf4f4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>🏭</div>
               )}
               <div>
                 <div style={{ fontFamily: 'Sora, sans-serif', fontSize: 15, fontWeight: 700, color: '#0F1623' }}>{taller?.nombre_fantasia}</div>
                 <div style={{ fontSize: 12, color: '#8896A8' }}>{taller?.razon_social}</div>
               </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
               {taller?.direccion && <div style={{ fontSize: 13, color: '#4A5568' }}>📍 {taller.direccion}</div>}
               {taller?.telefono  && <div style={{ fontSize: 13, color: '#4A5568' }}>📞 {taller.telefono}</div>}
               {taller?.cuit      && <div style={{ fontSize: 13, color: '#4A5568', fontFamily: 'DM Mono, monospace' }}>CUIT: {taller.cuit}</div>}
@@ -190,17 +185,15 @@ export default function PeritoDetallePeritacion() {
           </div>
 
           {/* Vehículo */}
-          <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 18, padding: 24 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#8896A8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 }}>
-              Datos del vehículo
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 18, padding: isMobile ? 18 : 24 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#8896A8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 14 }}>Datos del vehículo</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {[
-                { label: 'Vehículo',    value: peritacion.vehiculo },
-                { label: 'Patente',     value: peritacion.patente, mono: true },
-                { label: 'Cliente',     value: peritacion.cliente },
+                { label: 'Vehículo',     value: peritacion.vehiculo },
+                { label: 'Patente',      value: peritacion.patente, mono: true },
+                { label: 'Cliente',      value: peritacion.cliente },
                 { label: 'N° Siniestro', value: peritacion.nro_siniestro, mono: true },
-                { label: 'Tipo',        value: peritacion.tipo === 'chapa_pintura' ? 'Chapa y pintura' : peritacion.tipo === 'granizo' ? 'Granizo' : null },
+                { label: 'Tipo',         value: peritacion.tipo === 'chapa_pintura' ? 'Chapa y pintura' : peritacion.tipo === 'granizo' ? 'Granizo' : null },
               ].map(item => item.value && (
                 <div key={item.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: 12, color: '#8896A8', fontWeight: 600 }}>{item.label}</span>
@@ -215,14 +208,13 @@ export default function PeritoDetallePeritacion() {
 
         {/* Fotos */}
         {fotos.length > 0 && (
-          <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 18, padding: 24 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#8896A8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 }}>
+          <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 18, padding: isMobile ? 18 : 24 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#8896A8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 14 }}>
               Fotos del daño ({fotos.length})
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 10 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))', gap: 8 }}>
               {fotos.map(foto => (
-                <div key={foto.id}
-                  onClick={() => setFotoAmpliada(foto.url)}
+                <div key={foto.id} onClick={() => setFotoAmpliada(foto.url)}
                   style={{ borderRadius: 10, overflow: 'hidden', aspectRatio: '1', border: '1px solid #E2E6EC', cursor: 'zoom-in' }}>
                   <img src={foto.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
@@ -231,52 +223,94 @@ export default function PeritoDetallePeritacion() {
           </div>
         )}
 
-        {/* Tabla de daños */}
+        {/* Daños */}
         {danos.length > 0 && (
-          <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 18, padding: 24 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#8896A8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 }}>
+          <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 18, padding: isMobile ? 18 : 24 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#8896A8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 14 }}>
               Tabla de daños
             </div>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid #E2E6EC' }}>
-                    {['Acción', 'Pieza', 'Días chapa', 'Paños pintura', 'Hs mecánica', 'Otros ($)'].map(h => (
-                      <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#8896A8', textTransform: 'uppercase', letterSpacing: .5, whiteSpace: 'nowrap' }}>{h}</th>
+
+            {isMobile ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {danos.map((d, i) => (
+                  <div key={i} style={{ border: '1px solid #E2E6EC', borderRadius: 10, padding: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <span style={{ background: '#eaf4f4', color: '#063940', fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 20, textTransform: 'capitalize' as const }}>{d.accion}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#0F1623' }}>{d.pieza}</span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                      {[
+                        { label: 'Días chapa',    value: d.dias_chapa },
+                        { label: 'Paños pintura', value: d.panos_pintura },
+                        { label: 'Hs mecánica',   value: d.hs_mecanica },
+                        { label: 'Otros ($)',     value: d.otros },
+                      ].map(item => item.value > 0 && (
+                        <div key={item.label} style={{ background: '#F7F8FA', borderRadius: 6, padding: '6px 8px' }}>
+                          <div style={{ fontSize: 10, color: '#8896A8', marginBottom: 1 }}>{item.label}</div>
+                          <div style={{ fontFamily: 'DM Mono, monospace', fontWeight: 700, color: '#063940', fontSize: 13 }}>{formatNum(item.value)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                {/* Totales mobile */}
+                <div style={{ background: '#F7F8FA', borderRadius: 10, padding: '12px 14px' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#8896A8', textTransform: 'uppercase', letterSpacing: .5, marginBottom: 8 }}>Totales</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                    {[
+                      { label: 'Días chapa',    value: totalChapa },
+                      { label: 'Paños pintura', value: totalPanos },
+                      { label: 'Hs mecánica',   value: totalMecanica },
+                      { label: 'Otros ($)',     value: totalOtros },
+                    ].map(t => (
+                      <div key={t.label} style={{ background: 'white', borderRadius: 8, padding: '8px 10px', border: '1px solid #E2E6EC' }}>
+                        <div style={{ fontSize: 11, color: '#8896A8', marginBottom: 2 }}>{t.label}</div>
+                        <div style={{ fontFamily: 'DM Mono, monospace', fontWeight: 700, color: '#063940', fontSize: 15 }}>{formatNum(t.value)}</div>
+                      </div>
                     ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {danos.map((d, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid #F7F8FA' }}>
-                      <td style={{ padding: '10px 12px' }}>
-                        <span style={{ background: '#eaf4f4', color: '#063940', fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 20, textTransform: 'capitalize' as const }}>
-                          {d.accion}
-                        </span>
-                      </td>
-                      <td style={{ padding: '10px 12px', color: '#0F1623', fontWeight: 500 }}>{d.pieza}</td>
-                      <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', textAlign: 'right', color: '#4A5568' }}>{formatNum(d.dias_chapa)}</td>
-                      <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', textAlign: 'right', color: '#4A5568' }}>{formatNum(d.panos_pintura)}</td>
-                      <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', textAlign: 'right', color: '#4A5568' }}>{formatNum(d.hs_mecanica)}</td>
-                      <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', textAlign: 'right', color: '#4A5568' }}>{formatNum(d.otros)}</td>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid #E2E6EC' }}>
+                      {['Acción', 'Pieza', 'Días chapa', 'Paños pintura', 'Hs mecánica', 'Otros ($)'].map(h => (
+                        <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#8896A8', textTransform: 'uppercase', letterSpacing: .5, whiteSpace: 'nowrap' }}>{h}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr style={{ borderTop: '2px solid #E2E6EC', background: '#F7F8FA' }}>
-                    <td colSpan={2} style={{ padding: '10px 12px', fontWeight: 700, fontSize: 12, color: '#0F1623' }}>TOTALES</td>
-                    <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: '#063940', textAlign: 'right' }}>{formatNum(totalChapa)}</td>
-                    <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: '#063940', textAlign: 'right' }}>{formatNum(totalPanos)}</td>
-                    <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: '#063940', textAlign: 'right' }}>{formatNum(totalMecanica)}</td>
-                    <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: '#063940', textAlign: 'right' }}>{formatNum(totalOtros)}</td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {danos.map((d, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid #F7F8FA' }}>
+                        <td style={{ padding: '10px 12px' }}>
+                          <span style={{ background: '#eaf4f4', color: '#063940', fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 20, textTransform: 'capitalize' as const }}>{d.accion}</span>
+                        </td>
+                        <td style={{ padding: '10px 12px', color: '#0F1623', fontWeight: 500 }}>{d.pieza}</td>
+                        <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', textAlign: 'right', color: '#4A5568' }}>{formatNum(d.dias_chapa)}</td>
+                        <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', textAlign: 'right', color: '#4A5568' }}>{formatNum(d.panos_pintura)}</td>
+                        <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', textAlign: 'right', color: '#4A5568' }}>{formatNum(d.hs_mecanica)}</td>
+                        <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', textAlign: 'right', color: '#4A5568' }}>{formatNum(d.otros)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ borderTop: '2px solid #E2E6EC', background: '#F7F8FA' }}>
+                      <td colSpan={2} style={{ padding: '10px 12px', fontWeight: 700, fontSize: 12, color: '#0F1623' }}>TOTALES</td>
+                      <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: '#063940', textAlign: 'right' }}>{formatNum(totalChapa)}</td>
+                      <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: '#063940', textAlign: 'right' }}>{formatNum(totalPanos)}</td>
+                      <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: '#063940', textAlign: 'right' }}>{formatNum(totalMecanica)}</td>
+                      <td style={{ padding: '10px 12px', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: '#063940', textAlign: 'right' }}>{formatNum(totalOtros)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            )}
 
             {peritacion.mano_obra_total && (
-              <div style={{ marginTop: 16, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 12, padding: '12px 16px', background: '#eaf4f4', borderRadius: 12 }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#4A5568' }}>Valor total mano de obra:</span>
+              <div style={{ marginTop: 14, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 12, padding: '12px 16px', background: '#eaf4f4', borderRadius: 12 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: '#4A5568' }}>Mano de obra total:</span>
                 <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 16, fontWeight: 700, color: '#063940' }}>
                   ${formatNum(peritacion.mano_obra_total)}
                 </span>
