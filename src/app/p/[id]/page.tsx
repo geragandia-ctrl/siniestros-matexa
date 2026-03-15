@@ -323,4 +323,14 @@ export default function PeritacionPublica() {
 
     </div>
   )
+  {/* CTA registro */}
+<div style={{ marginTop: 16, background: 'white', border: '1px solid #E2E6EC', borderRadius: 16, padding: '20px 24px', textAlign: 'center' }}>
+  <p style={{ fontSize: 14, color: '#4A5568', marginBottom: 12 }}>
+    ¿Trabajás en una compañía de seguros? Gestioná todas tus peritaciones en un solo lugar.
+  </p>
+  <a href="/registro?tipo=perito"
+    style={{ display: 'inline-block', background: '#063940', color: 'white', borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
+    Registrate gratis en Matexa Siniestros →
+  </a>
+</div>
 }
