@@ -1451,7 +1451,7 @@ window.doRegistroTaller = async () => {
     id: uid, rol: 'taller', taller_id: taller.id, nombre, email
   })
   setLoading('reg-taller', false)
-  window.location.href = '/dashboard/taller'
+  window.location.href = usuario?.rol === 'taller' ? '/taller/inicio' : '/perito/inicio'
 }
 
 // REGISTRO COMPAÑÍA
