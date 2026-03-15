@@ -145,6 +145,10 @@ img { max-width: 100%; display: block; }
 
 .nav-actions { display: flex; align-items: center; gap: 10px; }
 
+@media (max-width: 480px) {
+  .nav-logo-sep, .nav-logo-sub { display: none; }
+}
+
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
   font-family: var(--font-body);
@@ -760,6 +764,7 @@ strong, b, h1, h2, h3, h4, h5, h6, .btn, .section-title, .flow-name, .feature-ti
     <li><a href="#como-funciona">Cómo funciona</a></li>
     <li><a href="#para-quien">¿Para quién?</a></li>
     <li><a href="#el-sistema">El sistema</a></li>
+    <li><a href="#contacto">Contacto</a></li>
   </ul>
 
   <div class="nav-actions">
@@ -1151,6 +1156,44 @@ strong, b, h1, h2, h3, h4, h5, h6, .btn, .section-title, .flow-name, .feature-ti
         <div class="feature-title">100% mobile-friendly</div>
         <div class="feature-desc">Funciona desde el celular como una app instalada. Cargás en el taller y completás desde la computadora si preferís.</div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACTO -->
+<section class="section" id="contacto" style="background:var(--gray-50);">
+  <div class="section-inner" style="max-width:640px;">
+    <div style="text-align:center; margin-bottom:40px;">
+      <div class="section-tag" style="justify-content:center;">Contacto</div>
+      <h2 class="section-title">¿Tenés preguntas?</h2>
+      <p class="section-sub" style="margin:0 auto;">Escribinos y te respondemos a la brevedad.</p>
+    </div>
+    <div style="background:white; border:1px solid var(--border); border-radius:var(--radius-xl); padding:40px; box-shadow:var(--shadow-sm);">
+      <form action="https://formspree.io/f/xgonlarz" method="POST">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nombre</label>
+            <input type="text" name="nombre" class="form-input" placeholder="Tu nombre" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-input" placeholder="tu@email.com" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Soy...</label>
+          <select name="tipo" class="form-select">
+            <option>Taller de chapa y pintura</option>
+            <option>Perito / Compañía de seguros</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mensaje</label>
+          <textarea name="mensaje" class="form-input" placeholder="¿En qué te podemos ayudar?" rows="4" style="resize:vertical;"></textarea>
+        </div>
+        <button type="submit" class="form-submit">Enviar mensaje →</button>
+      </form>
     </div>
   </div>
 </section>

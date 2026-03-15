@@ -13,6 +13,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [loading, setLoading]         = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isMobile, setIsMobile]       = useState(false)
+  const [contactoOpen, setContactoOpen]     = useState(false)
+  const [contactoEnviado, setContactoEnviado] = useState(false)
 
   useEffect(() => {
     checkAuth()
@@ -66,21 +68,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Overlay mobile */}
       {sidebarOpen && isMobile && (
-        <div
-          onClick={() => setSidebarOpen(false)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 49 }}
-        />
+        <div onClick={() => setSidebarOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 49 }} />
       )}
 
       {/* SIDEBAR */}
       <aside style={{
-        width: sidebarWidth,
-        background: '#0F1623',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'fixed',
-        top: 0, left: 0, bottom: 0,
-        zIndex: 50,
+        width: sidebarWidth, background: '#0F1623',
+        display: 'flex', flexDirection: 'column',
+        position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 50,
         transform: isMobile && !sidebarOpen ? `translateX(-${sidebarWidth}px)` : 'translateX(0)',
         transition: 'transform .3s ease',
       }}>
@@ -121,6 +117,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </Link>
             )
           })}
+
+          {/* Contacto */}
+          <button
+            onClick={() => { setContactoOpen(true); isMobile && setSidebarOpen(false) }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '10px 10px', borderRadius: 8,
+              fontSize: 14, fontWeight: 500,
+              color: 'rgba(255,255,255,.45)',
+              background: 'transparent',
+              border: 'none', cursor: 'pointer',
+              width: '100%', marginBottom: 2,
+              fontFamily: 'DM Sans, sans-serif',
+              transition: 'all .18s',
+            }}
+          >
+            <span style={{ width: 20, textAlign: 'center', fontSize: 16 }}>✉️</span>
+            <span>Contacto</span>
+          </button>
         </div>
 
         {/* Bottom */}
@@ -134,10 +149,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div style={{ fontSize: 11, color: 'rgba(255,255,255,.35)' }}>{esTaller ? 'Taller' : 'Perito'}</div>
             </div>
           </div>
-          <button
-            onClick={cerrarSesion}
-            style={{ width: '100%', marginTop: 8, padding: '9px', background: 'rgba(255,255,255,.08)', border: 'none', borderRadius: 8, color: 'rgba(255,255,255,.5)', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}
-          >
+          <button onClick={cerrarSesion}
+            style={{ width: '100%', marginTop: 8, padding: '9px', background: 'rgba(255,255,255,.08)', border: 'none', borderRadius: 8, color: 'rgba(255,255,255,.5)', fontSize: 13, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
             Cerrar sesión
           </button>
         </div>
@@ -146,36 +159,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* MAIN */}
       <div style={{
         marginLeft: isMobile ? 0 : sidebarWidth,
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
+        flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh',
         transition: 'margin-left .3s ease',
       }}>
 
         {/* Header */}
         <header style={{
-          height: 60,
-          background: 'white',
-          borderBottom: '1px solid #E2E6EC',
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0 20px',
-          position: 'sticky',
-          top: 0,
-          zIndex: 40,
-          gap: 12,
+          height: 60, background: 'white', borderBottom: '1px solid #E2E6EC',
+          display: 'flex', alignItems: 'center', padding: '0 20px',
+          position: 'sticky', top: 0, zIndex: 40, gap: 12,
         }}>
-          {/* Hamburguesa — solo mobile */}
           {isMobile && (
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: '#4A5568', padding: 4, display: 'flex', alignItems: 'center' }}
-            >
+            <button onClick={() => setSidebarOpen(!sidebarOpen)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: '#4A5568', padding: 4, display: 'flex', alignItems: 'center' }}>
               ☰
             </button>
           )}
-
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: '#8896A8' }}>
             <span>{esTaller ? 'Taller' : 'Perito'}</span>
             <span style={{ color: '#C8D0DC' }}>›</span>
@@ -183,7 +182,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {navItems.find(n => pathname === n.href || pathname.startsWith(n.href + '/'))?.label || ''}
             </span>
           </div>
-
           <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#eaf4f4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: '#063940', cursor: 'pointer', flexShrink: 0 }}>
             {perfil?.nombre ? iniciales(perfil.nombre) : '?'}
           </div>
@@ -194,6 +192,67 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </div>
+
+      {/* MODAL CONTACTO */}
+      {contactoOpen && (
+        <div onClick={() => setContactoOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div onClick={e => e.stopPropagation()}
+            style={{ background: 'white', borderRadius: 24, padding: 32, width: '100%', maxWidth: 480, boxShadow: '0 16px 48px rgba(15,22,35,.12)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <div>
+                <h2 style={{ fontFamily: 'Sora, sans-serif', fontSize: 20, fontWeight: 700, color: '#0F1623' }}>Contacto</h2>
+                <p style={{ fontSize: 13, color: '#8896A8', marginTop: 2 }}>Te respondemos a la brevedad</p>
+              </div>
+              <button onClick={() => setContactoOpen(false)}
+                style={{ background: '#F0F2F5', border: 'none', borderRadius: 8, width: 32, height: 32, cursor: 'pointer', fontSize: 16 }}>✕</button>
+            </div>
+
+            {contactoEnviado ? (
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
+                <p style={{ fontSize: 15, fontWeight: 600, color: '#0F1623', marginBottom: 6 }}>¡Mensaje enviado!</p>
+                <p style={{ fontSize: 13, color: '#8896A8' }}>Te respondemos a la brevedad.</p>
+                <button onClick={() => { setContactoOpen(false); setContactoEnviado(false) }}
+                  style={{ marginTop: 20, background: '#063940', color: 'white', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+                  Cerrar
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={async (e) => {
+                e.preventDefault()
+                const form = e.currentTarget
+                const data = new FormData(form)
+                await fetch('https://formspree.io/f/xgonlarz', { method: 'POST', body: data, headers: { Accept: 'application/json' } })
+                setContactoEnviado(true)
+              }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#0F1623', marginBottom: 6 }}>Nombre</label>
+                    <input name="nombre" type="text" placeholder="Tu nombre" required defaultValue={perfil?.nombre || ''}
+                      style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #E2E6EC', borderRadius: 10, fontSize: 14, fontFamily: 'DM Sans, sans-serif', outline: 'none' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#0F1623', marginBottom: 6 }}>Email</label>
+                    <input name="email" type="email" placeholder="tu@email.com" required defaultValue={perfil?.email || ''}
+                      style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #E2E6EC', borderRadius: 10, fontSize: 14, fontFamily: 'DM Sans, sans-serif', outline: 'none' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#0F1623', marginBottom: 6 }}>Mensaje</label>
+                    <textarea name="mensaje" placeholder="¿En qué te podemos ayudar?" rows={4} required
+                      style={{ width: '100%', padding: '10px 14px', border: '1.5px solid #E2E6EC', borderRadius: 10, fontSize: 14, fontFamily: 'DM Sans, sans-serif', outline: 'none', resize: 'vertical' }} />
+                  </div>
+                  <button type="submit"
+                    style={{ background: '#063940', color: 'white', border: 'none', borderRadius: 10, padding: '12px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+                    Enviar mensaje →
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
