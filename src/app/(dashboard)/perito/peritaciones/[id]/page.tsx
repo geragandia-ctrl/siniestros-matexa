@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import * as XLSX from 'xlsx'
+import JSZip from 'jszip'
 
 export default function PeritoDetallePeritacion() {
   const router = useRouter()
@@ -110,6 +111,27 @@ export default function PeritoDetallePeritacion() {
 
   const taller = peritacion.taller
 
+  async function descargarFotos() {
+  if (fotos.length === 0) return
+  const zip = new JSZip()
+  const carpeta = zip.folder(`fotos_${peritacion.patente || peritacion.id.slice(0, 6)}`)!
+
+  await Promise.all(fotos.map(async (foto, i) => {
+    const response = await fetch(foto.url)
+    const blob     = await response.blob()
+    const ext      = foto.url.split('.').pop()?.split('?')[0] || 'jpg'
+    carpeta.file(`foto_${i + 1}.${ext}`, blob)
+  }))
+
+  const content = await zip.generateAsync({ type: 'blob' })
+  const url     = URL.createObjectURL(content)
+  const a       = document.createElement('a')
+  a.href        = url
+  a.download    = `fotos_${peritacion.patente || peritacion.id.slice(0, 6)}.zip`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
   return (
     <div style={{ maxWidth: 900, margin: '0 auto' }}>
 
@@ -145,6 +167,7 @@ export default function PeritoDetallePeritacion() {
             style={{ flex: isMobile ? 1 : undefined, background: 'white', color: '#063940', border: '1.5px solid #063940', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
             📊 Excel
           </button>
+          
           {peritacion.estado === 'enviada' ? (
             <button onClick={confirmarRecepcion} disabled={confirmando}
               style={{ flex: isMobile ? 1 : undefined, background: '#0DBF7E', color: 'white', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
@@ -220,6 +243,12 @@ export default function PeritoDetallePeritacion() {
                 </div>
               ))}
             </div>
+            {fotos.length > 0 && (
+  <button onClick={descargarFotos}
+    style={{ marginTop: 12, width: '100%', background: '#063940', color: 'white', border: 'none', borderRadius: 10, padding: '10px 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+    📸 Descargar fotos
+  </button>
+)}
           </div>
         )}
 
