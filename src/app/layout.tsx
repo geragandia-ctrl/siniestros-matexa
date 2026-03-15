@@ -25,9 +25,16 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
+  
   title: "Siniestros | Matexa",
   description: "Portal de gestión de peritaciones para talleres y compañías de seguros",
 };
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+}
 
 export default function RootLayout({
   children,

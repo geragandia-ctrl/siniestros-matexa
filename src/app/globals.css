@@ -33,3 +33,40 @@
   ::-webkit-scrollbar-thumb { background: #E2E6EC; border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: #8896A8; }
 }
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+b, strong, h1, h2, h3, h4, h5, h6,
+button, label, th {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-synthesis: none;
+}
+
+/* Mobile responsive dashboard */
+@media (max-width: 768px) {
+  .md\:ml-60 {
+    margin-left: 0 !important;
+  }
+  .md\:translate-x-0 {
+    transform: translateX(-100%);
+  }
+  .md\:hidden {
+    display: flex !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .md\:ml-60 {
+    margin-left: 240px;
+  }
+  .md\:translate-x-0 {
+    transform: translateX(0) !important;
+  }
+  .md\:hidden {
+    display: none !important;
+  }
+}
