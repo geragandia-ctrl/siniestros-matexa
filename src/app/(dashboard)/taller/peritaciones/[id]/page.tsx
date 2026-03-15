@@ -205,37 +205,35 @@ export default function DetallePeritacionPage() {
         </div>
 
         {/* Botones acción */}
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <button onClick={guardarTodo} disabled={guardando}
-            style={{ flex: isMobile ? 1 : undefined, background: guardando ? '#9AA5B4' : '#063940', color: 'white', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: guardando ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
-            {guardando ? 'Guardando...' : '💾 Guardar'}
-          </button>
-          <button
-  onClick={() => {
-    if (guardando) return
-    const tieneCambios = true // siempre pedimos guardar primero
-    guardarTodo().then(() => {
-      navigator.clipboard.writeText(`https://siniestros.matexa.app/p/${id}`)
-      alert('✅ Cambios guardados. Link copiado al portapapeles.')
-    })
-  }}
-  style={{ background: 'white', color: '#063940', border: '1.5px solid #063940', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}
->
-  🔗 Guardar y compartir
-</button>
-          {peritacion.estado === 'pendiente' && (
-            <button onClick={() => cambiarEstado('enviada')}
-              style={{ flex: isMobile ? 1 : undefined, background: '#7C3AED', color: 'white', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
-              📤 Enviar al perito
-            </button>
-          )}
-          {peritacion.estado === 'enviada' && (
-            <button onClick={() => cambiarEstado('pendiente')}
-              style={{ background: 'white', color: '#4A5568', border: '1px solid #E2E6EC', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
-              Volver a pendiente
-            </button>
-          )}
-        </div>
+<div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+  <button onClick={guardarTodo} disabled={guardando}
+    style={{ flex: isMobile ? 1 : undefined, background: guardando ? '#9AA5B4' : '#063940', color: 'white', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: guardando ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+    {guardando ? 'Guardando...' : '💾 Guardar'}
+  </button>
+
+  <button
+    onClick={async () => {
+      await navigator.clipboard.writeText(`https://siniestros.matexa.app/p/${id}`)
+      const marcar = window.confirm('Link copiado ✓\n\n¿Querés marcarla como enviada?')
+      if (marcar) await cambiarEstado('enviada')
+    }}
+    style={{ background: 'white', color: '#063940', border: '1.5px solid #063940', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+    🔗 Copiar link
+  </button>
+
+  {peritacion.estado === 'pendiente' && (
+    <button onClick={() => cambiarEstado('enviada')}
+      style={{ flex: isMobile ? 1 : undefined, background: '#7C3AED', color: 'white', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+      📤 Enviar al perito
+    </button>
+  )}
+  {peritacion.estado === 'enviada' && (
+    <button onClick={() => cambiarEstado('pendiente')}
+      style={{ background: 'white', color: '#4A5568', border: '1px solid #E2E6EC', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+      Volver a pendiente
+    </button>
+  )}
+</div>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>

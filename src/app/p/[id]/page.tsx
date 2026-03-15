@@ -101,15 +101,15 @@ export default function PeritacionPublica() {
 
       {/* Header */}
       <header style={{ background: '#0F1623', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 32, height: 32, background: '#195e63', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Sora, sans-serif', fontSize: 14, fontWeight: 800, color: 'white' }}>M</div>
-          <div>
-            <div style={{ fontFamily: 'Sora, sans-serif', fontSize: 15, fontWeight: 800, color: 'white', lineHeight: 1.2 }}>Matexa</div>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', fontWeight: 600 }}>siniestros</div>
-          </div>
-        </div>
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,.4)' }}>Vista pública · Solo lectura</div>
-      </header>
+  <a href="https://siniestros.matexa.app" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+    <div style={{ width: 32, height: 32, background: '#195e63', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Sora, sans-serif', fontSize: 14, fontWeight: 800, color: 'white' }}>M</div>
+    <div>
+      <div style={{ fontFamily: 'Sora, sans-serif', fontSize: 15, fontWeight: 800, color: 'white', lineHeight: 1.2 }}>Matexa</div>
+      <div style={{ fontSize: 10, color: 'rgba(255,255,255,.4)', fontWeight: 600 }}>siniestros</div>
+    </div>
+  </a>
+  <div style={{ fontSize: 12, color: 'rgba(255,255,255,.4)' }}>Vista pública · Solo lectura</div>
+</header>
 
       <div style={{ maxWidth: 860, margin: '0 auto', padding: isMobile ? '20px 16px' : '28px 20px' }}>
 
@@ -325,7 +325,7 @@ export default function PeritacionPublica() {
   )
   {/* CTA registro */}
 <div style={{ marginTop: 16, background: 'white', border: '1px solid #E2E6EC', borderRadius: 16, padding: '20px 24px', textAlign: 'center' }}>
-  <p style={{ fontSize: 14, color: '#4A5568', marginBottom: 12 }}>
+ <p style={{ fontSize: 14, color: '#0F1623', marginBottom: 12 }}>
     ¿Trabajás en una compañía de seguros? Gestioná todas tus peritaciones en un solo lugar.
   </p>
   <a href="/registro?tipo=perito"
