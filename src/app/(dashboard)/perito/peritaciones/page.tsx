@@ -34,7 +34,7 @@ export default function PeritoPeritacionesPage() {
     const { data } = await supabase
       .from('peritaciones')
       .select('*, taller:talleres(id, nombre_fantasia), compania:companias(nombre)')
-      .eq('compania_id', usuario.compania_id)
+      .eq('perito_id', session.user.id)
       .in('estado', ['enviada', 'recibida'])
       .order('created_at', { ascending: false })
 
