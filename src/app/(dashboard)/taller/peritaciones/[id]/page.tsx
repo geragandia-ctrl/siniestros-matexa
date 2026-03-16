@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Peritacion, Dano, Foto, Compania } from '@/types'
 
+
 type DanoForm = Omit<Dano, 'id' | 'peritacion_id' | 'created_at'> & { id?: string; guardado?: boolean }
 
 export default function DetallePeritacionPage() {
@@ -40,8 +41,7 @@ export default function DetallePeritacionPage() {
 
   async function cargarDatos() {
     const [{ data: per }, { data: fotosData }, { data: danosData }, { data: ciasData }] = await Promise.all([
-      supabase.from('peritaciones').select('*, compania:companias(id, nombre)').eq('id', id).single(),
-      supabase.from('fotos').select('*').eq('peritacion_id', id).order('created_at'),
+supabase.from('peritaciones').select('*, compania:companias(id, nombre), perito:usuarios!perito_id(nombre, email)').eq('id', id).single(),      supabase.from('fotos').select('*').eq('peritacion_id', id).order('created_at'),
       supabase.from('danos').select('*').eq('peritacion_id', id).order('orden'),
       supabase.from('companias').select('*').order('nombre'),
     ])
@@ -105,12 +105,45 @@ export default function DetallePeritacionPage() {
   }
 
   async function cambiarEstado(nuevoEstado: string) {
-    await guardarTodo()
-    const update: any = { estado: nuevoEstado }
-    if (nuevoEstado === 'enviada') update.fecha_envio = new Date().toISOString()
-    await supabase.from('peritaciones').update(update).eq('id', id)
-    await cargarDatos()
+  await guardarTodo()
+  const update: any = { estado: nuevoEstado }
+  if (nuevoEstado === 'enviada') update.fecha_envio = new Date().toISOString()
+  await supabase.from('peritaciones').update(update).eq('id', id)
+
+  // Notificar al perito por email cuando se envía
+  if (nuevoEstado === 'enviada' && peritacion?.perito_id) {
+    const { data: perito } = await supabase
+      .from('usuarios')
+      .select('nombre, email')
+      .eq('id', peritacion.perito_id)
+      .single()
+
+    const { data: tallerData } = await supabase
+      .from('talleres')
+      .select('nombre_fantasia')
+      .eq('id', peritacion.taller_id)
+      .single()
+
+    if (perito?.email) {
+      await fetch('/api/notificar-perito', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          emailPerito:    perito.email,
+          nombrePerito:   perito.nombre,
+          nombreTaller:   tallerData?.nombre_fantasia || 'El taller',
+          vehiculo:       peritacion.vehiculo,
+          patente:        peritacion.patente,
+          nroSiniestro:   peritacion.nro_siniestro,
+          compania:       (peritacion.compania as any)?.nombre,
+          linkPeritacion: `https://siniestros.matexa.app/perito/peritaciones/${id}`,
+        })
+      })
+    }
   }
+
+  await cargarDatos()
+}
 
   async function subirFotos(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || [])

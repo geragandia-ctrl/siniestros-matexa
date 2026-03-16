@@ -37,6 +37,7 @@ export interface Peritacion {
   id: string
   taller_id: string
   compania_id: string
+  perito_id?: string
   tipo?: TipoPeritacion
   vehiculo?: string
   patente?: string

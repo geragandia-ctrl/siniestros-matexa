@@ -64,34 +64,114 @@ export default function PeritoDetallePeritacion() {
   }
 
   function exportarExcel() {
-    const taller = peritacion.taller
-    const datosGenerales = [
-      ['PERITACIÓN DE SINIESTRO'], [],
-      ['Taller',          taller?.nombre_fantasia || ''],
-      ['Razón social',    taller?.razon_social    || ''],
-      ['Dirección',       taller?.direccion       || ''],
-      ['Teléfono',        taller?.telefono        || ''],
-      ['CUIT',            taller?.cuit            || ''],
-      [],
-      ['Compañía',        peritacion.compania?.nombre  || ''],
-      ['Vehículo',        peritacion.vehiculo          || ''],
-      ['Patente',         peritacion.patente           || ''],
-      ['Cliente',         peritacion.cliente           || ''],
-      ['N° Siniestro',    peritacion.nro_siniestro     || ''],
-      ['Tipo',            peritacion.tipo === 'chapa_pintura' ? 'Chapa y pintura' : peritacion.tipo === 'granizo' ? 'Granizo' : ''],
-      ['Fecha envío',     peritacion.fecha_envio     ? new Date(peritacion.fecha_envio).toLocaleDateString('es-AR')     : ''],
-      ['Fecha recepción', peritacion.fecha_recepcion ? new Date(peritacion.fecha_recepcion).toLocaleDateString('es-AR') : ''],
-    ]
-    const encabezados = ['Acción', 'Pieza', 'Días chapa', 'Paños pintura', 'Hs mecánica', 'Otros ($)']
-    const filasDanos  = danos.map(d => [d.accion, d.pieza, d.dias_chapa, d.panos_pintura, d.hs_mecanica, d.otros])
-    const filaTotales = ['TOTALES', '', totalChapa, totalPanos, totalMecanica, totalOtros]
-    const filaManoObra = peritacion.mano_obra_total ? [[], ['Mano de obra total', '', '', '', '', peritacion.mano_obra_total]] : []
-    const danosSheet = [encabezados, ...filasDanos, [], filaTotales, ...filaManoObra]
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(datosGenerales), 'Datos')
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(danosSheet), 'Daños')
-    XLSX.writeFile(wb, `Peritacion_${peritacion.patente || peritacion.id.slice(0, 6)}_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.xlsx`)
+  const taller = peritacion.taller
+  const wb = XLSX.utils.book_new()
+
+  // ── Hoja única ────────────────────────────────────────────
+  const filas: any[][] = []
+
+  // Título
+  filas.push(['PERITACIÓN DE SINIESTRO'])
+  filas.push([])
+
+  // Datos del taller
+  filas.push(['DATOS DEL TALLER', '', '', '', '', ''])
+  filas.push(['Taller',       taller?.nombre_fantasia || '—', '', 'Razón social', taller?.razon_social || '—', ''])
+  filas.push(['Dirección',    taller?.direccion       || '—', '', 'Teléfono',     taller?.telefono     || '—', ''])
+  filas.push(['CUIT',         taller?.cuit            || '—', '', '', '', ''])
+  filas.push([])
+
+  // Datos del siniestro
+  filas.push(['DATOS DEL SINIESTRO', '', '', '', '', ''])
+  filas.push(['Compañía',     peritacion.compania?.nombre    || '—', '', 'Tipo',         peritacion.tipo === 'chapa_pintura' ? 'Chapa y pintura' : peritacion.tipo === 'granizo' ? 'Granizo' : '—', ''])
+  filas.push(['Vehículo',     peritacion.vehiculo            || '—', '', 'Patente',      peritacion.patente        || '—', ''])
+  filas.push(['Cliente',      peritacion.cliente             || '—', '', 'N° Siniestro', peritacion.nro_siniestro  || '—', ''])
+  filas.push(['Fecha envío',  peritacion.fecha_envio     ? new Date(peritacion.fecha_envio).toLocaleDateString('es-AR')     : '—', '', 'Fecha recep.',  peritacion.fecha_recepcion ? new Date(peritacion.fecha_recepcion).toLocaleDateString('es-AR') : '—', ''])
+  filas.push([])
+
+  // Tabla de daños — encabezados
+  filas.push(['TABLA DE DAÑOS', '', '', '', '', ''])
+  const headerRow = filas.length - 1
+  filas.push(['Acción', 'Pieza', 'Días chapa', 'Paños pintura', 'Hs mecánica', 'Otros ($)'])
+  const dataStartRow = filas.length
+
+  // Filas de daños
+  danos.forEach(d => {
+    filas.push([
+      d.accion.charAt(0).toUpperCase() + d.accion.slice(1),
+      d.pieza,
+      Number(d.dias_chapa)    || 0,
+      Number(d.panos_pintura) || 0,
+      Number(d.hs_mecanica)   || 0,
+      Number(d.otros)         || 0,
+    ])
+  })
+
+  filas.push([])
+
+  // Totales
+  filas.push(['TOTALES', '', totalChapa, totalPanos, totalMecanica, totalOtros])
+  const totalesRow = filas.length - 1
+
+  // Mano de obra
+  if (peritacion.mano_obra_total) {
+    filas.push([])
+    filas.push(['Mano de obra total', '', '', '', '', Number(peritacion.mano_obra_total)])
   }
+
+  // Crear hoja
+  const ws = XLSX.utils.aoa_to_sheet(filas)
+
+  // Anchos de columna
+  ws['!cols'] = [
+    { wch: 20 }, // A
+    { wch: 35 }, // B
+    { wch: 14 }, // C
+    { wch: 16 }, // D
+    { wch: 14 }, // E
+    { wch: 14 }, // F
+  ]
+
+  // Estilos — título
+  const tituloCell = ws['A1']
+  if (tituloCell) {
+    tituloCell.s = {
+      font: { bold: true, sz: 14, color: { rgb: '063940' } },
+      alignment: { horizontal: 'left' }
+    }
+  }
+
+  // Estilos — headers de sección
+  const sectionRows = [2, 7, 12] // filas 0-indexed donde van DATOS DEL TALLER, SINIESTRO, TABLA
+  sectionRows.forEach(r => {
+    const cell = ws[XLSX.utils.encode_cell({ r, c: 0 })]
+    if (cell) cell.s = { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '063940' } } }
+  })
+
+  // Estilos — encabezados tabla daños
+  ;['A','B','C','D','E','F'].forEach(col => {
+    const cell = ws[`${col}${dataStartRow}`]
+    if (cell) cell.s = {
+      font: { bold: true, color: { rgb: 'FFFFFF' } },
+      fill: { fgColor: { rgb: '195e63' } },
+      alignment: { horizontal: col === 'A' || col === 'B' ? 'left' : 'center' }
+    }
+  })
+
+  // Estilos — fila totales
+  ;['A','B','C','D','E','F'].forEach(col => {
+    const cell = ws[`${col}${totalesRow + 1}`]
+    if (cell) cell.s = {
+      font: { bold: true, color: { rgb: '063940' } },
+      fill: { fgColor: { rgb: 'EAF4F4' } }
+    }
+  })
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Peritación')
+
+  const nombre = `Peritacion_${peritacion.patente || peritacion.id.slice(0, 6)}_${new Date().toLocaleDateString('es-AR').replace(/\//g, '-')}.xlsx`
+  XLSX.writeFile(wb, nombre)
+}
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
