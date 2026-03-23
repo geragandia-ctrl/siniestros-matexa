@@ -118,7 +118,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             )
           })}
 
-          {/* Contacto */}
+          {/* Soporte */}
           <button
             onClick={() => { setContactoOpen(true); isMobile && setSidebarOpen(false) }}
             style={{
