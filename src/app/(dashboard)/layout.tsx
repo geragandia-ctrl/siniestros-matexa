@@ -52,6 +52,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navPerito = [
     { href: '/perito/inicio',        icon: '🏠', label: 'Inicio' },
     { href: '/perito/peritaciones',  icon: '📋', label: 'Peritaciones' },
+    { href: '/perito/configuracion', icon: '👤', label: 'Mis datos' },
   ]
   const navItems = esTaller ? navTaller : navPerito
 
