@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         </div>
 
         <p style="text-align: center; font-size: 12px; color: #C8D0DC; margin: 0;">
-          Matexa Siniestros · siniestros.matexa.app
+          Matexa Siniestros · peritaciones.matexa.app
         </p>
       </div>
     `

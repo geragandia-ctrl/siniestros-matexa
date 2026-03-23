@@ -136,7 +136,7 @@ supabase.from('peritaciones').select('*, compania:companias(id, nombre), perito:
           patente:        peritacion.patente,
           nroSiniestro:   peritacion.nro_siniestro,
           compania:       (peritacion.compania as any)?.nombre,
-          linkPeritacion: `https://siniestros.matexa.app/perito/peritaciones/${id}`,
+          linkPeritacion: `https://peritaciones.matexa.app/perito/peritaciones/${id}`,
         })
       })
     }
@@ -246,7 +246,7 @@ supabase.from('peritaciones').select('*, compania:companias(id, nombre), perito:
 
   <button
     onClick={async () => {
-      await navigator.clipboard.writeText(`https://siniestros.matexa.app/p/${id}`)
+      await navigator.clipboard.writeText(`https://peritaciones.matexa.app/p/${id}`)
       const marcar = window.confirm('Link copiado ✓\n\n¿Querés marcarla como enviada?')
       if (marcar) await cambiarEstado('enviada')
     }}

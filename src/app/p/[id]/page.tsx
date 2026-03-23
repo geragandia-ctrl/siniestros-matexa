@@ -101,7 +101,7 @@ export default function PeritacionPublica() {
 
       {/* Header */}
       <header style={{ background: '#0F1623', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-  <a href="https://siniestros.matexa.app" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
+  <a href="https://peritaciones.matexa.app" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
     <div style={{ width: 32, height: 32, background: '#195e63', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Sora, sans-serif', fontSize: 14, fontWeight: 800, color: 'white' }}>M</div>
     <div>
       <div style={{ fontFamily: 'Sora, sans-serif', fontSize: 15, fontWeight: 800, color: 'white', lineHeight: 1.2 }}>Matexa</div>
@@ -304,7 +304,7 @@ export default function PeritacionPublica() {
 
         {/* Footer */}
         <div style={{ marginTop: 32, textAlign: 'center', fontSize: 12, color: '#C8D0DC' }}>
-          Generado por Matexa Siniestros · siniestros.matexa.app
+          Generado por Matexa Siniestros · peritaciones.matexa.app
         </div>
 
       </div>
