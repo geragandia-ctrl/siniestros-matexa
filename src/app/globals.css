@@ -27,7 +27,9 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-size: 16px;
-    zoom: 1.07;
+    @media (min-width: 768px) {
+  body { zoom: 1.04; }
+}
   }
 
   ::-webkit-scrollbar { width: 6px; }
