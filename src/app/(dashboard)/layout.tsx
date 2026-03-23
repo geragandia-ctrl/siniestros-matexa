@@ -48,7 +48,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/taller/inicio',        icon: '🏠', label: 'Inicio' },
     { href: '/taller/peritaciones',  icon: '📋', label: 'Peritaciones' },
     { href: '/taller/configuracion', icon: '⚙️', label: 'Mi taller' },
-  ]
+      ]
   const navPerito = [
     { href: '/perito/inicio',        icon: '🏠', label: 'Inicio' },
     { href: '/perito/peritaciones',  icon: '📋', label: 'Peritaciones' },
@@ -135,6 +135,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <span style={{ width: 18, textAlign: 'center', fontSize: 15 }}>✉️</span>
             <span>Contacto</span>
           </button>
+          {/* Separador + link externo */}
+{esTaller && (
+  <>
+    <div style={{ margin: '12px 8px 8px', borderTop: '1px solid rgba(255,255,255,.07)' }} />
+    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase', color: 'rgba(255,255,255,.25)', padding: '0 8px', marginBottom: 4 }}>
+      Externo
+    </div>
+    <a href="https://www.matexa.app/" target="_blank" rel="noreferrer"
+      style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '9px 10px', borderRadius: 8,
+        fontSize: 13.5, fontWeight: 500,
+        color: 'rgba(255,255,255,.45)',
+        textDecoration: 'none', marginBottom: 2,
+        transition: 'all .18s',
+      }}>
+      <span style={{ width: 18, textAlign: 'center', fontSize: 15 }}>🔗</span>
+      <span>Gestión talleres</span>
+    </a>
+  </>
+)}
         </div>
 
         {/* Bottom */}

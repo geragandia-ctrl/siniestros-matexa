@@ -103,28 +103,23 @@ export default function TallerInicio() {
       )}
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: isMobile ? 10 : 16, marginBottom: 24 }}>
-        {[
-          { icon: '⏳', bg: '#FFF3E0', label: 'Pendientes', value: pendientes, sub: 'Sin completar' },
-          { icon: '📤', bg: '#EDE9FE', label: 'Enviadas',   value: enviadas,   sub: 'Esperando perito' },
-          { icon: '✅', bg: '#E6FBF3', label: 'Recibidas',  value: recibidas,  sub: 'Confirmadas' },
-        ].map(stat => (
-          <div key={stat.label} style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 18, padding: isMobile ? '16px 12px' : 20, boxShadow: '0 2px 8px rgba(15,22,35,.06)' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
-              <div style={{ width: 38, height: 38, borderRadius: 10, background: stat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
-                {stat.icon}
-              </div>
-              <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 20, background: '#F0F2F5', color: '#8896A8' }}>
-                {stat.sub}
-              </span>
-            </div>
-            <div style={{ fontFamily: 'Sora, sans-serif', fontSize: isMobile ? 26 : 30, fontWeight: 700, color: '#0F1623', lineHeight: 1, marginBottom: 4, fontVariantNumeric: 'tabular-nums' }}>
-              {stat.value}
-            </div>
-            <div style={{ fontSize: 13, color: '#8896A8' }}>{stat.label}</div>
-          </div>
-        ))}
+<div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(3, 1fr)', gap: isMobile ? 10 : 14, marginBottom: 24 }}>
+  {[
+    { icon: '⏳', label: 'Pendientes', value: pendientes },
+    { icon: '📤', label: 'Enviadas',   value: enviadas   },
+    { icon: '✅', label: 'Recibidas',  value: recibidas  },
+  ].map(stat => (
+    <div key={stat.label} style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 14, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 2px 8px rgba(15,22,35,.06)' }}>
+      <div style={{ fontSize: 28, flexShrink: 0 }}>{stat.icon}</div>
+      <div>
+        <div style={{ fontFamily: 'Sora, sans-serif', fontSize: 26, fontWeight: 700, color: '#0F1623', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+          {stat.value}
+        </div>
+        <div style={{ fontSize: 13, color: '#8896A8', marginTop: 3 }}>{stat.label}</div>
       </div>
+    </div>
+  ))}
+</div>
 
       {/* Grid inferior */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
