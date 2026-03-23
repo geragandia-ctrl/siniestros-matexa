@@ -191,31 +191,32 @@ export default function PeritoPeritacionesPage() {
             </thead>
             <tbody>
               {filtradas.map(p => (
-                <tr key={p.id} onClick={() => router.push(`/perito/peritaciones/${p.id}`)} style={{ borderBottom: '1px solid #F7F8FA', cursor: 'pointer' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#F7F8FA')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'white')}>
-                  <td style={{ padding: '14px 16px', fontFamily: 'DM Mono, monospace', fontWeight: 600, color: '#063940', fontSize: 12 }}>
-                    {p.patente || <span style={{ color: '#C8D0DC' }}>—</span>}
-                  </td>
-                  <td style={{ padding: '14px 16px', color: '#0F1623', fontWeight: 500 }}>{p.vehiculo || <span style={{ color: '#C8D0DC' }}>—</span>}</td>
-                  <td style={{ padding: '14px 16px', color: '#4A5568' }}>{p.cliente || <span style={{ color: '#C8D0DC' }}>—</span>}</td>
-                  <td style={{ padding: '14px 16px', color: '#4A5568' }}>{p.taller?.nombre_fantasia || <span style={{ color: '#C8D0DC' }}>—</span>}</td>
-                  <td style={{ padding: '14px 16px', fontFamily: 'DM Mono, monospace', fontSize: 12, color: '#4A5568' }}>{p.nro_siniestro || <span style={{ color: '#C8D0DC' }}>—</span>}</td>
-                  <td style={{ padding: '14px 16px' }}>{badgeEstado(p.estado)}</td>
-                  <td style={{ padding: '14px 16px', color: '#8896A8', whiteSpace: 'nowrap' }}>
-                    {p.fecha_envio ? formatFecha(p.fecha_envio) : <span style={{ color: '#C8D0DC' }}>—</span>}
-                  </td>
-                  <td style={{ padding: '14px 16px' }}>
-                    {p.estado === 'enviada' ? (
-                      <button onClick={e => { e.stopPropagation(); confirmarRecepcion(p.id) }} disabled={confirmando === p.id}
-                        style={{ background: '#0DBF7E', color: 'white', border: 'none', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}>
-                        {confirmando === p.id ? '...' : '✓ Confirmar'}
-                      </button>
-                    ) : (
-                      <span style={{ fontSize: 12, color: '#0DBF7E', fontWeight: 600 }}>✓ Recibida</span>
-                    )}
-                  </td>
-                </tr>
+                <tr key={p.id}
+  style={{ borderBottom: '1px solid #F7F8FA', cursor: 'pointer' }}
+  onMouseEnter={e => (e.currentTarget.style.background = '#F7F8FA')}
+  onMouseLeave={e => (e.currentTarget.style.background = 'white')}>
+  <td onClick={() => router.push(`/perito/peritaciones/${p.id}`)} style={{ padding: '14px 16px', fontFamily: 'DM Mono, monospace', fontWeight: 600, color: '#063940', fontSize: 12 }}>
+    {p.patente || <span style={{ color: '#C8D0DC' }}>—</span>}
+  </td>
+  <td onClick={() => router.push(`/perito/peritaciones/${p.id}`)} style={{ padding: '14px 16px', color: '#0F1623', fontWeight: 500 }}>{p.vehiculo || <span style={{ color: '#C8D0DC' }}>—</span>}</td>
+  <td onClick={() => router.push(`/perito/peritaciones/${p.id}`)} style={{ padding: '14px 16px', color: '#4A5568' }}>{p.cliente || <span style={{ color: '#C8D0DC' }}>—</span>}</td>
+  <td onClick={() => router.push(`/perito/peritaciones/${p.id}`)} style={{ padding: '14px 16px', color: '#4A5568' }}>{p.taller?.nombre_fantasia || <span style={{ color: '#C8D0DC' }}>—</span>}</td>
+  <td onClick={() => router.push(`/perito/peritaciones/${p.id}`)} style={{ padding: '14px 16px', fontFamily: 'DM Mono, monospace', fontSize: 12, color: '#4A5568' }}>{p.nro_siniestro || <span style={{ color: '#C8D0DC' }}>—</span>}</td>
+  <td onClick={() => router.push(`/perito/peritaciones/${p.id}`)} style={{ padding: '14px 16px' }}>{badgeEstado(p.estado)}</td>
+  <td onClick={() => router.push(`/perito/peritaciones/${p.id}`)} style={{ padding: '14px 16px', color: '#8896A8', whiteSpace: 'nowrap' }}>
+    {p.fecha_envio ? formatFecha(p.fecha_envio) : <span style={{ color: '#C8D0DC' }}>—</span>}
+  </td>
+  <td style={{ padding: '14px 16px' }}>
+    {p.estado === 'enviada' ? (
+      <button onClick={e => { e.stopPropagation(); confirmarRecepcion(p.id) }} disabled={confirmando === p.id}
+        style={{ background: '#0DBF7E', color: 'white', border: 'none', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}>
+        {confirmando === p.id ? '...' : '✓ Confirmar'}
+      </button>
+    ) : (
+      <span style={{ fontSize: 12, color: '#0DBF7E', fontWeight: 600 }}>✓ Recibida</span>
+    )}
+  </td>
+</tr>
               ))}
             </tbody>
           </table>
