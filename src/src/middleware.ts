@@ -6,3 +6,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/landing.html', request.url))
   }
 }
+
+export const config = {
+  matcher: '/',
+}
