@@ -22,11 +22,9 @@ export default function TallerInicio() {
   async function cargarDatos() {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
-
     const { data: usuario } = await supabase
       .from('usuarios').select('taller_id').eq('id', session.user.id).single()
     if (!usuario?.taller_id) return
-
     const [{ data: tallerData }, { data: perData }] = await Promise.all([
       supabase.from('talleres').select('*').eq('id', usuario.taller_id).single(),
       supabase.from('peritaciones')
@@ -35,14 +33,13 @@ export default function TallerInicio() {
         .order('created_at', { ascending: false })
         .limit(20),
     ])
-
     setTaller(tallerData)
     setPeritaciones(perData || [])
     setLoading(false)
   }
 
-  const hora    = new Date().getHours()
-  const saludo  = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches'
+  const hora   = new Date().getHours()
+  const saludo = hora < 12 ? 'Buenos días' : hora < 18 ? 'Buenas tardes' : 'Buenas noches'
 
   const pendientes = peritaciones.filter(p => p.estado === 'pendiente').length
   const enviadas   = peritaciones.filter(p => p.estado === 'enviada').length
@@ -51,13 +48,13 @@ export default function TallerInicio() {
 
   function estadoBadge(estado: string) {
     const map: Record<string, { label: string; bg: string; color: string }> = {
-      pendiente: { label: 'Pendiente', bg: '#FFF3E0', color: '#C05621' },
-      enviada:   { label: 'Enviada',   bg: '#EDE9FE', color: '#6D28D9' },
+      pendiente: { label: 'Pendiente',  bg: '#FFF3E0', color: '#C05621' },
+      enviada:   { label: 'Enviada',    bg: '#EDE9FE', color: '#6D28D9' },
       recibida:  { label: 'Recibida ✓', bg: '#E6FBF3', color: '#047857' },
     }
     const s = map[estado] || { label: estado, bg: '#F0F2F5', color: '#8896A8' }
     return (
-      <span style={{ background: s.bg, color: s.color, fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 20 }}>
+      <span style={{ background: s.bg, color: s.color, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, whiteSpace: 'nowrap' }}>
         {s.label}
       </span>
     )
@@ -68,9 +65,9 @@ export default function TallerInicio() {
     const min  = Math.floor(diff / 60000)
     const hs   = Math.floor(min / 60)
     const dias = Math.floor(hs / 24)
-    if (min < 60)   return `Hace ${min} min`
-    if (hs < 24)    return `Hace ${hs}h`
-    if (dias === 1) return 'Ayer'
+    if (min < 60)    return `Hace ${min} min`
+    if (hs < 24)     return `Hace ${hs}h`
+    if (dias === 1)  return 'Ayer'
     return `Hace ${dias} días`
   }
 
@@ -84,8 +81,8 @@ export default function TallerInicio() {
     <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 
       {/* Título */}
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontFamily: 'Sora, sans-serif', fontSize: isMobile ? 22 : 24, fontWeight: 700, color: '#0F1623', marginBottom: 4, letterSpacing: -.3 }}>
+      <div style={{ marginBottom: 28 }}>
+        <h1 style={{ fontFamily: 'Sora, sans-serif', fontSize: isMobile ? 22 : 26, fontWeight: 700, color: '#0F1623', marginBottom: 4, letterSpacing: -.4 }}>
           {saludo} 👋
         </h1>
         <p style={{ fontSize: 14, color: '#8896A8' }}>
@@ -93,7 +90,7 @@ export default function TallerInicio() {
         </p>
       </div>
 
-      {/* Botón nueva peritación — destacado en mobile */}
+      {/* Botón nueva — mobile */}
       {isMobile && (
         <Link href="/taller/peritaciones/nueva" style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -106,25 +103,25 @@ export default function TallerInicio() {
       )}
 
       {/* Stats */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(3, 1fr)',
-        gap: isMobile ? 10 : 16,
-        marginBottom: 24,
-      }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: isMobile ? 10 : 16, marginBottom: 24 }}>
         {[
-          { icon: '⏳', bg: '#FFF3E0', label: 'Pendientes',  value: pendientes },
-          { icon: '📤', bg: '#EDE9FE', label: 'Enviadas',    value: enviadas   },
-          { icon: '✅', bg: '#E6FBF3', label: 'Recibidas',   value: recibidas  },
+          { icon: '⏳', bg: '#FFF3E0', label: 'Pendientes', value: pendientes, sub: 'Sin completar' },
+          { icon: '📤', bg: '#EDE9FE', label: 'Enviadas',   value: enviadas,   sub: 'Esperando perito' },
+          { icon: '✅', bg: '#E6FBF3', label: 'Recibidas',  value: recibidas,  sub: 'Confirmadas' },
         ].map(stat => (
-          <div key={stat.label} style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 16, padding: isMobile ? '14px 12px' : 20 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: stat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, marginBottom: 10 }}>
-              {stat.icon}
+          <div key={stat.label} style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 18, padding: isMobile ? '16px 12px' : 20, boxShadow: '0 2px 8px rgba(15,22,35,.06)' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: stat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
+                {stat.icon}
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 20, background: '#F0F2F5', color: '#8896A8' }}>
+                {stat.sub}
+              </span>
             </div>
-            <div style={{ fontFamily: 'Sora, sans-serif', fontSize: isMobile ? 24 : 28, fontWeight: 700, color: '#0F1623', lineHeight: 1, marginBottom: 4 }}>
+            <div style={{ fontFamily: 'Sora, sans-serif', fontSize: isMobile ? 26 : 30, fontWeight: 700, color: '#0F1623', lineHeight: 1, marginBottom: 4, fontVariantNumeric: 'tabular-nums' }}>
               {stat.value}
             </div>
-            <div style={{ fontSize: isMobile ? 11 : 13, color: '#8896A8' }}>{stat.label}</div>
+            <div style={{ fontSize: 13, color: '#8896A8' }}>{stat.label}</div>
           </div>
         ))}
       </div>
@@ -133,8 +130,8 @@ export default function TallerInicio() {
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16 }}>
 
         {/* Actividad reciente */}
-        <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 18, overflow: 'hidden' }}>
-          <div style={{ padding: '16px 20px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E6EC' }}>
+        <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 18, overflow: 'hidden', boxShadow: '0 2px 8px rgba(15,22,35,.06)' }}>
+          <div style={{ padding: '18px 20px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E6EC' }}>
             <span style={{ fontFamily: 'Sora, sans-serif', fontSize: 15, fontWeight: 700, color: '#0F1623' }}>Actividad reciente</span>
             <Link href="/taller/peritaciones" style={{ fontSize: 12, fontWeight: 600, color: '#3e838c', textDecoration: 'none' }}>
               Ver todas →
@@ -142,13 +139,14 @@ export default function TallerInicio() {
           </div>
           <div>
             {recientes.length === 0 ? (
-              <div style={{ padding: '28px 20px', textAlign: 'center', fontSize: 13, color: '#8896A8' }}>
+              <div style={{ padding: '32px 20px', textAlign: 'center', fontSize: 13, color: '#8896A8' }}>
                 No hay peritaciones todavía.{' '}
                 <Link href="/taller/peritaciones/nueva" style={{ color: '#063940', fontWeight: 600 }}>Creá la primera →</Link>
               </div>
             ) : recientes.map(p => (
-              <Link key={p.id} href={`/taller/peritaciones/${p.id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', borderBottom: '1px solid #F7F8FA', textDecoration: 'none' }}>
-                <div style={{ width: 10, height: 10, borderRadius: '50%', flexShrink: 0, background: p.estado === 'pendiente' ? '#F5962A' : p.estado === 'enviada' ? '#7C3AED' : '#0DBF7E' }} />
+              <Link key={p.id} href={`/taller/peritaciones/${p.id}`}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 20px', borderBottom: '1px solid #F7F8FA', textDecoration: 'none' }}>
+                <div style={{ width: 9, height: 9, borderRadius: '50%', flexShrink: 0, background: p.estado === 'pendiente' ? '#F5962A' : p.estado === 'enviada' ? '#7C3AED' : '#0DBF7E' }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 500, color: '#0F1623', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {p.vehiculo || 'Vehículo'}{p.patente ? ` · ${p.patente}` : ''}
@@ -166,10 +164,10 @@ export default function TallerInicio() {
           </div>
         </div>
 
-        {/* Accesos rápidos — oculto en mobile porque ya está el botón arriba */}
+        {/* Accesos rápidos — solo desktop */}
         {!isMobile && (
-          <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 18, overflow: 'hidden' }}>
-            <div style={{ padding: '16px 20px 14px', borderBottom: '1px solid #E2E6EC' }}>
+          <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 18, overflow: 'hidden', boxShadow: '0 2px 8px rgba(15,22,35,.06)' }}>
+            <div style={{ padding: '18px 20px 14px', borderBottom: '1px solid #E2E6EC' }}>
               <span style={{ fontFamily: 'Sora, sans-serif', fontSize: 15, fontWeight: 700, color: '#0F1623' }}>Accesos rápidos</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: '#E2E6EC' }}>
@@ -196,7 +194,6 @@ export default function TallerInicio() {
             </div>
           </div>
         )}
-
       </div>
     </div>
   )

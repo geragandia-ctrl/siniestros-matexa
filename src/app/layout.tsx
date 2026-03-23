@@ -26,7 +26,7 @@ const dmMono = DM_Mono({
 
 export const metadata: Metadata = {
   
-  title: "Siniestros | Matexa",
+  title: "Peritaciones | Matexa",
   description: "Portal de gestión de peritaciones para talleres y compañías de seguros",
 };
 

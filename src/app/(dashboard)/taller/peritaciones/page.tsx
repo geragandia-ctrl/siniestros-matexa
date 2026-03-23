@@ -27,11 +27,9 @@ export default function PeritacionesPage() {
   async function cargarDatos() {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
-
     const { data: usuario } = await supabase
       .from('usuarios').select('taller_id').eq('id', session.user.id).single()
     if (!usuario?.taller_id) return
-
     const [{ data: perData }, { data: ciaData }] = await Promise.all([
       supabase.from('peritaciones')
         .select('*, compania:companias(id, nombre)')
@@ -39,7 +37,6 @@ export default function PeritacionesPage() {
         .order('created_at', { ascending: false }),
       supabase.from('companias').select('*').order('nombre'),
     ])
-
     setPeritaciones(perData || [])
     setCompanias(ciaData || [])
     setLoading(false)
@@ -65,13 +62,13 @@ export default function PeritacionesPage() {
 
   function badgeEstado(estado: string) {
     const map: Record<string, { label: string; bg: string; color: string }> = {
-      pendiente: { label: 'Pendiente', bg: '#FFF3E0', color: '#C05621' },
-      enviada:   { label: 'Enviada',   bg: '#EDE9FE', color: '#6D28D9' },
+      pendiente: { label: 'Pendiente',  bg: '#FFF3E0', color: '#C05621' },
+      enviada:   { label: 'Enviada',    bg: '#EDE9FE', color: '#6D28D9' },
       recibida:  { label: 'Recibida ✓', bg: '#E6FBF3', color: '#047857' },
     }
     const s = map[estado] || { label: estado, bg: '#F0F2F5', color: '#8896A8' }
     return (
-      <span style={{ background: s.bg, color: s.color, fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 20, whiteSpace: 'nowrap' }}>
+      <span style={{ background: s.bg, color: s.color, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, whiteSpace: 'nowrap' }}>
         {s.label}
       </span>
     )
@@ -79,6 +76,12 @@ export default function PeritacionesPage() {
 
   function formatFecha(fecha: string) {
     return new Date(fecha).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit' })
+  }
+
+  const inputStyle: React.CSSProperties = {
+    padding: '9px 12px', border: '1.5px solid #E2E6EC', borderRadius: 10,
+    fontSize: 13, fontFamily: 'DM Sans, sans-serif', color: '#0F1623',
+    outline: 'none', background: 'white',
   }
 
   if (loading) return (
@@ -91,9 +94,9 @@ export default function PeritacionesPage() {
     <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontFamily: 'Sora, sans-serif', fontSize: isMobile ? 20 : 24, fontWeight: 700, color: '#0F1623', marginBottom: 2, letterSpacing: -.3 }}>
+          <h1 style={{ fontFamily: 'Sora, sans-serif', fontSize: isMobile ? 20 : 26, fontWeight: 700, color: '#0F1623', marginBottom: 2, letterSpacing: -.4 }}>
             Peritaciones
           </h1>
           <p style={{ fontSize: 13, color: '#8896A8' }}>
@@ -102,43 +105,37 @@ export default function PeritacionesPage() {
         </div>
         <button
           onClick={() => router.push('/taller/peritaciones/nueva')}
-          style={{ background: '#063940', color: 'white', border: 'none', borderRadius: 12, padding: isMobile ? '10px 16px' : '12px 24px', fontSize: isMobile ? 13 : 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}
+          style={{ background: '#063940', color: 'white', border: 'none', borderRadius: 12, padding: isMobile ? '10px 18px' : '11px 24px', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}
         >
           + Nueva
         </button>
       </div>
 
       {/* Filtros */}
-      <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 16, padding: '14px 16px', marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 16, padding: '14px 16px', marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 10, boxShadow: '0 2px 8px rgba(15,22,35,.06)' }}>
         <input
           type="text"
           placeholder="🔍  Buscar por patente, vehículo, siniestro..."
           value={busqueda}
           onChange={e => setBusqueda(e.target.value)}
-          style={{ width: '100%', padding: '9px 14px', border: '1.5px solid #E2E6EC', borderRadius: 10, fontSize: 13, fontFamily: 'DM Sans, sans-serif', color: '#0F1623', outline: 'none' }}
+          style={{ ...inputStyle, width: '100%' }}
         />
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <select
-            value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}
-            style={{ flex: 1, minWidth: 130, padding: '9px 12px', border: '1.5px solid #E2E6EC', borderRadius: 10, fontSize: 13, fontFamily: 'DM Sans, sans-serif', color: '#0F1623', outline: 'none', background: 'white' }}
-          >
+          <select value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}
+            style={{ ...inputStyle, flex: 1, minWidth: 130 }}>
             <option value="">Todos los estados</option>
             <option value="pendiente">Pendiente</option>
             <option value="enviada">Enviada</option>
             <option value="recibida">Recibida</option>
           </select>
-          <select
-            value={filtroCompania} onChange={e => setFiltroCompania(e.target.value)}
-            style={{ flex: 1, minWidth: 130, padding: '9px 12px', border: '1.5px solid #E2E6EC', borderRadius: 10, fontSize: 13, fontFamily: 'DM Sans, sans-serif', color: '#0F1623', outline: 'none', background: 'white' }}
-          >
+          <select value={filtroCompania} onChange={e => setFiltroCompania(e.target.value)}
+            style={{ ...inputStyle, flex: 1, minWidth: 130 }}>
             <option value="">Todas las compañías</option>
             {companias.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
           </select>
           {(busqueda || filtroEstado || filtroCompania) && (
-            <button
-              onClick={() => { setBusqueda(''); setFiltroEstado(''); setFiltroCompania('') }}
-              style={{ padding: '9px 14px', border: '1.5px solid #E2E6EC', borderRadius: 10, fontSize: 13, color: '#8896A8', background: 'white', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}
-            >
+            <button onClick={() => { setBusqueda(''); setFiltroEstado(''); setFiltroCompania('') }}
+              style={{ ...inputStyle, cursor: 'pointer', color: '#8896A8' }}>
               Limpiar
             </button>
           )}
@@ -147,7 +144,7 @@ export default function PeritacionesPage() {
 
       {/* Contenido */}
       {filtradas.length === 0 ? (
-        <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 16, padding: '48px 20px', textAlign: 'center' }}>
+        <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 16, padding: '48px 20px', textAlign: 'center', boxShadow: '0 2px 8px rgba(15,22,35,.06)' }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>📋</div>
           <p style={{ fontSize: 15, fontWeight: 600, color: '#0F1623', marginBottom: 6 }}>
             {peritaciones.length === 0 ? 'Todavía no hay peritaciones' : 'No hay resultados'}
@@ -156,27 +153,21 @@ export default function PeritacionesPage() {
             {peritaciones.length === 0 ? 'Cuando llegue un auto, creá la primera peritación.' : 'Probá con otros filtros.'}
           </p>
           {peritaciones.length === 0 && (
-            <button
-              onClick={() => router.push('/taller/peritaciones/nueva')}
-              style={{ background: '#063940', color: 'white', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}
-            >
+            <button onClick={() => router.push('/taller/peritaciones/nueva')}
+              style={{ background: '#063940', color: 'white', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
               + Nueva peritación
             </button>
           )}
         </div>
       ) : isMobile ? (
-        /* MOBILE — Cards */
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {filtradas.map(p => (
-            <div
-              key={p.id}
-              onClick={() => router.push(`/taller/peritaciones/${p.id}`)}
-              style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 14, padding: '14px 16px', cursor: 'pointer' }}
-            >
+            <div key={p.id} onClick={() => router.push(`/taller/peritaciones/${p.id}`)}
+              style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 14, padding: '14px 16px', cursor: 'pointer', boxShadow: '0 2px 8px rgba(15,22,35,.06)' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
                 <div>
-                  <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 13, fontWeight: 700, color: '#063940', marginBottom: 2 }}>
-                    {p.patente || <span style={{ color: '#C8D0DC', fontFamily: 'DM Sans, sans-serif' }}>Sin patente</span>}
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#063940', marginBottom: 2, fontVariantNumeric: 'tabular-nums' }}>
+                    {p.patente || <span style={{ color: '#C8D0DC' }}>Sin patente</span>}
                   </div>
                   <div style={{ fontSize: 14, fontWeight: 600, color: '#0F1623' }}>
                     {p.vehiculo || 'Vehículo sin definir'}
@@ -195,13 +186,12 @@ export default function PeritacionesPage() {
           ))}
         </div>
       ) : (
-        /* DESKTOP — Tabla */
-        <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 16, overflow: 'hidden' }}>
+        <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 8px rgba(15,22,35,.06)' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #E2E6EC' }}>
+              <tr style={{ borderBottom: '1px solid #E2E6EC', background: '#F7F8FA' }}>
                 {['Patente', 'Vehículo', 'Cliente', 'Compañía', 'Tipo', 'Estado', 'Fecha', ''].map(h => (
-                  <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#8896A8', textTransform: 'uppercase', letterSpacing: .5, whiteSpace: 'nowrap' }}>
+                  <th key={h} style={{ padding: '11px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#8896A8', textTransform: 'uppercase', letterSpacing: .5, whiteSpace: 'nowrap' }}>
                     {h}
                   </th>
                 ))}
@@ -209,37 +199,32 @@ export default function PeritacionesPage() {
             </thead>
             <tbody>
               {filtradas.map(p => (
-                <tr
-                  key={p.id}
-                  onClick={() => router.push(`/taller/peritaciones/${p.id}`)}
+                <tr key={p.id} onClick={() => router.push(`/taller/peritaciones/${p.id}`)}
                   style={{ borderBottom: '1px solid #F7F8FA', cursor: 'pointer' }}
                   onMouseEnter={e => (e.currentTarget.style.background = '#F7F8FA')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'white')}
-                >
-                  <td style={{ padding: '14px 16px', fontFamily: 'DM Mono, monospace', fontWeight: 600, color: '#063940', fontSize: 12 }}>
+                  onMouseLeave={e => (e.currentTarget.style.background = 'white')}>
+                  <td style={{ padding: '13px 16px', fontWeight: 700, color: '#063940', fontSize: 13, fontVariantNumeric: 'tabular-nums' }}>
                     {p.patente || <span style={{ color: '#C8D0DC' }}>—</span>}
                   </td>
-                  <td style={{ padding: '14px 16px', color: '#0F1623', fontWeight: 500 }}>
+                  <td style={{ padding: '13px 16px', color: '#0F1623', fontWeight: 500 }}>
                     {p.vehiculo || <span style={{ color: '#C8D0DC' }}>—</span>}
                   </td>
-                  <td style={{ padding: '14px 16px', color: '#4A5568' }}>
+                  <td style={{ padding: '13px 16px', color: '#4A5568' }}>
                     {p.cliente || <span style={{ color: '#C8D0DC' }}>—</span>}
                   </td>
-                  <td style={{ padding: '14px 16px', color: '#4A5568' }}>
+                  <td style={{ padding: '13px 16px', color: '#4A5568' }}>
                     {(p.compania as any)?.nombre || <span style={{ color: '#C8D0DC' }}>—</span>}
                   </td>
-                  <td style={{ padding: '14px 16px', color: '#4A5568' }}>
+                  <td style={{ padding: '13px 16px', color: '#4A5568' }}>
                     {p.tipo ? (p.tipo === 'chapa_pintura' ? 'Chapa y pintura' : 'Granizo') : <span style={{ color: '#C8D0DC' }}>—</span>}
                   </td>
-                  <td style={{ padding: '14px 16px' }}>{badgeEstado(p.estado)}</td>
-                  <td style={{ padding: '14px 16px', color: '#8896A8', whiteSpace: 'nowrap' }}>{formatFecha(p.created_at)}</td>
-                  <td style={{ padding: '14px 16px' }}>
-                    <button
-                      onClick={e => { e.stopPropagation(); eliminar(p.id) }}
+                  <td style={{ padding: '13px 16px' }}>{badgeEstado(p.estado)}</td>
+                  <td style={{ padding: '13px 16px', color: '#8896A8', whiteSpace: 'nowrap' }}>{formatFecha(p.created_at)}</td>
+                  <td style={{ padding: '13px 16px' }}>
+                    <button onClick={e => { e.stopPropagation(); eliminar(p.id) }}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C8D0DC', fontSize: 16, padding: 4, borderRadius: 6 }}
                       onMouseEnter={e => (e.currentTarget.style.color = '#E8404A')}
-                      onMouseLeave={e => (e.currentTarget.style.color = '#C8D0DC')}
-                    >
+                      onMouseLeave={e => (e.currentTarget.style.color = '#C8D0DC')}>
                       🗑
                     </button>
                   </td>
