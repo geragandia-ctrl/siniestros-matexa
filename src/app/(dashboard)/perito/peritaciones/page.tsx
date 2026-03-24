@@ -93,6 +93,13 @@ export default function PeritoPeritacionesPage() {
     </div>
   )
 
+async function enviarOrden(id: string) {
+  setConfirmando(id)
+  await supabase.from('peritaciones').update({ estado: 'orden_enviada' }).eq('id', id)
+  setPeritaciones(prev => prev.map(p => p.id === id ? { ...p, estado: 'orden_enviada' } : p))
+  setConfirmando(null)
+}
+
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 
@@ -174,9 +181,15 @@ export default function PeritoPeritacionesPage() {
                     {confirmando === p.id ? '...' : '✓ Confirmar'}
                   </button>
                 )}
-                {p.estado === 'recibida' && (
-                  <span style={{ flex: 1, textAlign: 'center', fontSize: 12, color: '#0DBF7E', fontWeight: 600, padding: '8px 14px' }}>✓ Recibida</span>
-                )}
+{p.estado === 'recibida' && (
+  <button onClick={() => enviarOrden(p.id)} disabled={confirmando === p.id}
+    style={{ flex: 1, background: '#7C3AED', color: 'white', border: 'none', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+    {confirmando === p.id ? '...' : '📤 Enviar orden'}
+  </button>
+)}
+{p.estado === 'orden_enviada' && (
+  <span style={{ flex: 1, textAlign: 'center', fontSize: 12, color: '#6D28D9', fontWeight: 600, padding: '8px 14px' }}>✓ Orden enviada</span>
+)}
               </div>
             </div>
           ))}
