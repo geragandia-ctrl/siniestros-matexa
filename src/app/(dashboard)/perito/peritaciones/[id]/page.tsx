@@ -231,15 +231,6 @@ export default function PeritoDetallePeritacion() {
 
   const taller = peritacion.taller
 
-async function enviarOrden() {
-  setConfirmando(true)
-  await supabase.from('peritaciones').update({
-    estado: 'orden_enviada',
-  }).eq('id', id)
-  await cargarDatos()
-  setConfirmando(false)
-}
-
   return (
     <div style={{ maxWidth: 900, margin: '0 auto' }}>
 
@@ -284,10 +275,9 @@ async function enviarOrden() {
   )}
 
   {peritacion.estado === 'recibida' && (
-    <button onClick={enviarOrden} disabled={confirmando}
-      style={{ flex: isMobile ? 1 : undefined, background: '#7C3AED', color: 'white', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
-      {confirmando ? 'Enviando...' : '📤 Enviar orden'}
-    </button>
+    <div style={{ background: '#E6FBF3', border: '1px solid #0DBF7E', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, color: '#047857' }}>
+      ✓ Recibida el {peritacion.fecha_recepcion ? formatFecha(peritacion.fecha_recepcion) : ''}
+    </div>
   )}
 
   {peritacion.estado === 'orden_enviada' && (
@@ -296,9 +286,6 @@ async function enviarOrden() {
     </div>
   )}
 </div>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
         {/* Datos taller + vehículo */}
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
