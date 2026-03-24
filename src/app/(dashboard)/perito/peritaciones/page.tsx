@@ -186,7 +186,7 @@ async function enviarOrden(id: string) {
 {p.estado === 'recibida' && (
   <button onClick={() => enviarOrden(p.id)} disabled={confirmando === p.id}
     style={{ flex: 1, background: '#7C3AED', color: 'white', border: 'none', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
-    {confirmando === p.id ? '...' : '📤 Enviar orden'}
+    {confirmando === p.id ? '...' : '📤 Orden Enviada'}
   </button>
 )}
 {p.estado === 'orden_enviada' && (
