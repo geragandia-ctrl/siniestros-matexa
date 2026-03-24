@@ -5,10 +5,11 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
 export default function PeritoInicio() {
-  const [compania, setCompania]         = useState<any>(null)
+  const [companias, setCompanias]       = useState<any[]>([])
   const [peritaciones, setPeritaciones] = useState<any[]>([])
   const [loading, setLoading]           = useState(true)
   const [isMobile, setIsMobile]         = useState(false)
+  const [sinCompanias, setSinCompanias] = useState(false)
 
   useEffect(() => {
     cargarDatos()
@@ -21,13 +22,22 @@ export default function PeritoInicio() {
   async function cargarDatos() {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) return
-    const { data: usuario } = await supabase
-      .from('usuarios')
-      .select('*, compania:companias(id, nombre)')
-      .eq('id', session.user.id)
-      .single()
-    if (!usuario) return
-    setCompania(usuario.compania)
+
+    // Obtener compañías del perito
+    const { data: misCompanias } = await supabase
+      .from('perito_companias')
+      .select('compania_id, compania:companias(id, nombre)')
+      .eq('perito_id', session.user.id)
+
+    if (!misCompanias || misCompanias.length === 0) {
+      setSinCompanias(true)
+      setLoading(false)
+      return
+    }
+
+    const companiaIds = misCompanias.map((r: any) => r.compania_id)
+    setCompanias(misCompanias.map((r: any) => r.compania))
+
     const { data: perData } = await supabase
       .from('peritaciones')
       .select('*, taller:talleres(nombre_fantasia), compania:companias(nombre)')
@@ -35,6 +45,7 @@ export default function PeritoInicio() {
       .in('estado', ['enviada', 'recibida'])
       .order('created_at', { ascending: false })
       .limit(20)
+
     setPeritaciones(perData || [])
     setLoading(false)
   }
@@ -77,62 +88,84 @@ export default function PeritoInicio() {
           {saludo} 👋
         </h1>
         <p style={{ fontSize: 14, color: '#8896A8' }}>
-          Peritaciones de <strong>{compania?.nombre || 'tu compañía'}</strong>
+          {companias.length > 0
+            ? `Recibís peritaciones de: ${companias.map((c: any) => c?.nombre).filter(Boolean).join(', ')}`
+            : 'Configurá tus compañías para empezar a recibir peritaciones.'}
         </p>
       </div>
 
-      {/* Stats */}
-<div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(2, 1fr)', gap: isMobile ? 10 : 14, marginBottom: 24 }}>
-  {[
-    { icon: '📋', label: 'Para revisar', value: enviadas  },
-    { icon: '✅', label: 'Confirmadas',  value: recibidas },
-  ].map(stat => (
-    <div key={stat.label} style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 14, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 2px 8px rgba(15,22,35,.06)' }}>
-      <div style={{ fontSize: 28, flexShrink: 0 }}>{stat.icon}</div>
-      <div>
-        <div style={{ fontFamily: 'Sora, sans-serif', fontSize: 26, fontWeight: 700, color: '#0F1623', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
-          {stat.value}
-        </div>
-        <div style={{ fontSize: 13, color: '#8896A8', marginTop: 3 }}>{stat.label}</div>
-      </div>
-    </div>
-  ))}
-</div>
-
-      {/* Recientes */}
-      <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 18, overflow: 'hidden', marginBottom: 16, boxShadow: '0 2px 8px rgba(15,22,35,.06)' }}>
-        <div style={{ padding: '18px 20px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E6EC' }}>
-          <span style={{ fontFamily: 'Sora, sans-serif', fontSize: 15, fontWeight: 700, color: '#0F1623' }}>Recientes</span>
-          <Link href="/perito/peritaciones" style={{ fontSize: 12, fontWeight: 600, color: '#3e838c', textDecoration: 'none' }}>
-            Ver todas →
+      {/* Alerta sin compañías */}
+      {sinCompanias && (
+        <div style={{ background: '#FFF3E0', border: '1px solid #F5962A', borderRadius: 14, padding: '16px 20px', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#C05621', marginBottom: 2 }}>⚠ No tenés compañías asignadas</div>
+            <div style={{ fontSize: 13, color: '#92400E' }}>Elegí las compañías para las que recibís peritaciones.</div>
+          </div>
+          <Link href="/perito/configuracion"
+            style={{ background: '#F5962A', color: 'white', borderRadius: 10, padding: '9px 18px', fontSize: 13, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+            Configurar ahora →
           </Link>
         </div>
-        <div>
-          {recientes.length === 0 ? (
-            <div style={{ padding: '32px 20px', textAlign: 'center', fontSize: 13, color: '#8896A8' }}>
-              No hay peritaciones todavía.
-            </div>
-          ) : recientes.map(p => (
-            <Link key={p.id} href={`/perito/peritaciones/${p.id}`}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 20px', borderBottom: '1px solid #F7F8FA', textDecoration: 'none' }}>
-              <div style={{ width: 9, height: 9, borderRadius: '50%', flexShrink: 0, background: p.estado === 'enviada' ? '#7C3AED' : '#0DBF7E' }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, color: '#0F1623', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {p.vehiculo || 'Vehículo'}{p.patente ? ` · ${p.patente}` : ''}
+      )}
+
+      {/* Stats */}
+      {!sinCompanias && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: isMobile ? 10 : 16, marginBottom: 24 }}>
+          {[
+            { icon: '📋', bg: '#EDE9FE', label: 'Para revisar', value: enviadas,  sub: 'Sin confirmar' },
+            { icon: '✅', bg: '#E6FBF3', label: 'Confirmadas',  value: recibidas, sub: 'Este período' },
+          ].map(stat => (
+            <div key={stat.label} style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 14, padding: isMobile ? '16px 12px' : 20, display: 'flex', alignItems: 'center', gap: 16, boxShadow: '0 2px 8px rgba(15,22,35,.06)' }}>
+              <div style={{ fontSize: 28, flexShrink: 0 }}>{stat.icon}</div>
+              <div>
+                <div style={{ fontFamily: 'Sora, sans-serif', fontSize: isMobile ? 26 : 30, fontWeight: 700, color: '#0F1623', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                  {stat.value}
                 </div>
-                <div style={{ fontSize: 12, color: '#8896A8', marginTop: 1 }}>{p.taller?.nombre_fantasia || ''}</div>
+                <div style={{ fontSize: 13, color: '#8896A8', marginTop: 3 }}>{stat.label}</div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-                {badgeEstado(p.estado)}
-                <span style={{ fontSize: 11, color: '#8896A8' }}>{tiempoRelativo(p.created_at)}</span>
-              </div>
-            </Link>
+            </div>
           ))}
         </div>
-      </div>
+      )}
+
+      {/* Recientes */}
+      {!sinCompanias && (
+        <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 18, overflow: 'hidden', marginBottom: 16, boxShadow: '0 2px 8px rgba(15,22,35,.06)' }}>
+          <div style={{ padding: '18px 20px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E6EC' }}>
+            <span style={{ fontFamily: 'Sora, sans-serif', fontSize: 15, fontWeight: 700, color: '#0F1623' }}>Recientes</span>
+            <Link href="/perito/peritaciones" style={{ fontSize: 12, fontWeight: 600, color: '#3e838c', textDecoration: 'none' }}>
+              Ver todas →
+            </Link>
+          </div>
+          <div>
+            {recientes.length === 0 ? (
+              <div style={{ padding: '32px 20px', textAlign: 'center', fontSize: 13, color: '#8896A8' }}>
+                No hay peritaciones todavía.
+              </div>
+            ) : recientes.map(p => (
+              <Link key={p.id} href={`/perito/peritaciones/${p.id}`}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 20px', borderBottom: '1px solid #F7F8FA', textDecoration: 'none' }}>
+                <div style={{ width: 9, height: 9, borderRadius: '50%', flexShrink: 0, background: p.estado === 'enviada' ? '#7C3AED' : '#0DBF7E' }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: '#0F1623', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {p.vehiculo || 'Vehículo'}{p.patente ? ` · ${p.patente}` : ''}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#8896A8', marginTop: 1 }}>
+                    {p.taller?.nombre_fantasia || ''}{p.compania?.nombre ? ` · ${p.compania.nombre}` : ''}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+                  {badgeEstado(p.estado)}
+                  <span style={{ fontSize: 11, color: '#8896A8' }}>{tiempoRelativo(p.created_at)}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Accesos rápidos — solo desktop */}
-      {!isMobile && (
+      {!isMobile && !sinCompanias && (
         <div style={{ background: 'white', border: '1px solid #E2E6EC', borderRadius: 18, overflow: 'hidden', boxShadow: '0 2px 8px rgba(15,22,35,.06)' }}>
           <div style={{ padding: '18px 20px 14px', borderBottom: '1px solid #E2E6EC' }}>
             <span style={{ fontFamily: 'Sora, sans-serif', fontSize: 15, fontWeight: 700, color: '#0F1623' }}>Accesos rápidos</span>
@@ -142,7 +175,7 @@ export default function PeritoInicio() {
               { href: '/perito/peritaciones?estado=enviada',  icon: '📋', bg: '#EDE9FE', title: 'Para revisar', sub: `${enviadas} sin confirmar` },
               { href: '/perito/peritaciones',                 icon: '🔍', bg: '#eaf4f4', title: 'Ver todas',    sub: `${peritaciones.length} peritaciones` },
               { href: '/perito/peritaciones?estado=recibida', icon: '✅', bg: '#E6FBF3', title: 'Confirmadas',  sub: `${recibidas} recibidas` },
-              { href: '/perito/peritaciones',                 icon: '🏢', bg: '#F0F2F5', title: compania?.nombre || 'Mi compañía', sub: 'Ver todo' },
+              { href: '/perito/configuracion',                icon: '🏢', bg: '#F0F2F5', title: 'Mis compañías', sub: `${companias.length} asignada${companias.length !== 1 ? 's' : ''}` },
             ].map(item => (
               <Link key={item.href + item.title} href={item.href}
                 style={{ background: 'white', padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}
@@ -159,6 +192,7 @@ export default function PeritoInicio() {
           </div>
         </div>
       )}
+
     </div>
   )
 }

@@ -51,6 +51,7 @@ export default function TallerInicio() {
       pendiente: { label: 'Pendiente',  bg: '#FFF3E0', color: '#C05621' },
       enviada:   { label: 'Enviada',    bg: '#EDE9FE', color: '#6D28D9' },
       recibida:  { label: 'Recibida ✓', bg: '#E6FBF3', color: '#047857' },
+      orden_enviada: { label: 'Orden enviada', bg: '#EDE9FE', color: '#6D28D9' },
     }
     const s = map[estado] || { label: estado, bg: '#F0F2F5', color: '#8896A8' }
     return (

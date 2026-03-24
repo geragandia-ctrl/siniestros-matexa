@@ -231,6 +231,15 @@ export default function PeritoDetallePeritacion() {
 
   const taller = peritacion.taller
 
+async function enviarOrden() {
+  setConfirmando(true)
+  await supabase.from('peritaciones').update({
+    estado: 'orden_enviada',
+  }).eq('id', id)
+  await cargarDatos()
+  setConfirmando(false)
+}
+
   return (
     <div style={{ maxWidth: 900, margin: '0 auto' }}>
 
@@ -261,22 +270,32 @@ export default function PeritoDetallePeritacion() {
         </div>
 
         {/* Botones */}
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <button onClick={exportarExcel}
-            style={{ flex: isMobile ? 1 : undefined, background: 'white', color: '#063940', border: '1.5px solid #063940', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
-            📊 Excel
-          </button>
-          {peritacion.estado === 'enviada' ? (
-            <button onClick={confirmarRecepcion} disabled={confirmando}
-              style={{ flex: isMobile ? 1 : undefined, background: '#0DBF7E', color: 'white', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
-              {confirmando ? 'Confirmando...' : '✓ Confirmar recepción'}
-            </button>
-          ) : (
-            <div style={{ background: '#E6FBF3', border: '1px solid #0DBF7E', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, color: '#047857' }}>
-              ✓ Recibida el {peritacion.fecha_recepcion ? formatFecha(peritacion.fecha_recepcion) : ''}
-            </div>
-          )}
-        </div>
+<div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+  <button onClick={exportarExcel}
+    style={{ flex: isMobile ? 1 : undefined, background: 'white', color: '#063940', border: '1.5px solid #063940', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+    📊 Excel
+  </button>
+
+  {peritacion.estado === 'enviada' && (
+    <button onClick={confirmarRecepcion} disabled={confirmando}
+      style={{ flex: isMobile ? 1 : undefined, background: '#0DBF7E', color: 'white', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+      {confirmando ? 'Confirmando...' : '✓ Confirmar recepción'}
+    </button>
+  )}
+
+  {peritacion.estado === 'recibida' && (
+    <button onClick={enviarOrden} disabled={confirmando}
+      style={{ flex: isMobile ? 1 : undefined, background: '#7C3AED', color: 'white', border: 'none', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+      {confirmando ? 'Enviando...' : '📤 Enviar orden'}
+    </button>
+  )}
+
+  {peritacion.estado === 'orden_enviada' && (
+    <div style={{ background: '#EDE9FE', border: '1px solid #7C3AED', borderRadius: 10, padding: '10px 20px', fontSize: 13, fontWeight: 700, color: '#6D28D9' }}>
+      ✓ Orden enviada
+    </div>
+  )}
+</div>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>

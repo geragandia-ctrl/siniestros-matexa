@@ -51,8 +51,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       ]
   const navPerito = [
     { href: '/perito/inicio',        icon: '🏠', label: 'Inicio' },
-    { href: '/perito/peritaciones',  icon: '📋', label: 'Peritaciones' },
     { href: '/perito/configuracion', icon: '👤', label: 'Mis datos' },
+    { href: '/perito/peritaciones',  icon: '📋', label: 'Peritaciones' },
   ]
   const navItems = esTaller ? navTaller : navPerito
 
@@ -134,7 +134,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             }}
           >
             <span style={{ width: 18, textAlign: 'center', fontSize: 15 }}>✉️</span>
-            <span>Contacto</span>
+            <span>Soporte</span>
           </button>
           {/* Separador + link externo */}
 {esTaller && (
