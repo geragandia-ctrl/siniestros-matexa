@@ -41,7 +41,7 @@ export default function LoginPage() {
           <div style={{ width: 36, height: 36, background: '#063940', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Sora, sans-serif', fontSize: 16, fontWeight: 800, color: 'white' }}>M</div>
           <div>
             <div style={{ fontFamily: 'Sora, sans-serif', fontSize: 18, fontWeight: 800, color: '#063940', lineHeight: 1.2 }}>Matexa</div>
-            <div style={{ fontSize: 10, color: '#8896A8', fontWeight: 600, letterSpacing: .5 }}>siniestros</div>
+            <div style={{ fontSize: 10, color: '#8896A8', fontWeight: 600, letterSpacing: .5 }}>peritaciones</div>
           </div>
         </div>
 
