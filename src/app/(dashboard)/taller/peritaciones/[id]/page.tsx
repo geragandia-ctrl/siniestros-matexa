@@ -450,15 +450,15 @@ supabase.from('peritaciones').select('*, compania:companias(id, nombre), perito:
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr style={{ borderTop: '2px solid #E2E6EC', background: '#F7F8FA' }}>
-                    <td colSpan={2} style={{ padding: '10px 10px', fontWeight: 700, fontSize: 12 }}>TOTALES</td>
-                    <td style={{ padding: '10px 10px', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: '#063940', textAlign: 'right' }}>{formatNum(totalChapa)}</td>
-                    <td style={{ padding: '10px 10px', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: '#063940', textAlign: 'right' }}>{formatNum(totalPanos)}</td>
-                    <td style={{ padding: '10px 10px', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: '#063940', textAlign: 'right' }}>{formatNum(totalMecanica)}</td>
-                    <td style={{ padding: '10px 10px', fontFamily: 'DM Mono, monospace', fontWeight: 700, color: '#063940', textAlign: 'right' }}>{formatNum(totalOtros)}</td>
-                    <td />
-                  </tr>
-                </tfoot>
+  <tr style={{ borderTop: '2px solid #E2E6EC', background: '#F7F8FA' }}>
+    <td colSpan={2} style={{ padding: '10px 10px', fontWeight: 700, fontSize: 12, color: '#0F1623' }}>TOTALES</td>
+    <td style={{ padding: '10px 10px', fontWeight: 700, color: '#063940', textAlign: 'center' }}>{formatNum(totalChapa)}</td>
+    <td style={{ padding: '10px 10px', fontWeight: 700, color: '#063940', textAlign: 'center' }}>{formatNum(totalPanos)}</td>
+    <td style={{ padding: '10px 10px', fontWeight: 700, color: '#063940', textAlign: 'center' }}>{formatNum(totalMecanica)}</td>
+    <td style={{ padding: '10px 10px', fontWeight: 700, color: '#063940', textAlign: 'center' }}>{formatNum(totalOtros)}</td>
+    <td />
+  </tr>
+</tfoot>
               </table>
             </div>
           )}
@@ -484,9 +484,11 @@ supabase.from('peritaciones').select('*, compania:companias(id, nombre), perito:
           )}
 
           <button onClick={() => setDanos(prev => [...prev, danonuevo()])}
-            style={{ marginTop: 14, background: 'white', border: '1.5px dashed #E2E6EC', borderRadius: 10, padding: '10px 18px', fontSize: 13, color: '#4A5568', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', width: '100%' }}>
-            + Agregar daño
-          </button>
+  style={{ marginTop: 14, background: '#eaf4f4', border: '1.5px solid #063940', borderRadius: 10, padding: '10px 18px', fontSize: 13, fontWeight: 700, color: '#063940', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', width: '100%' }}
+  onMouseEnter={e => { e.currentTarget.style.background = '#063940'; e.currentTarget.style.color = 'white' }}
+  onMouseLeave={e => { e.currentTarget.style.background = '#eaf4f4'; e.currentTarget.style.color = '#063940' }}>
+  + Agregar daño
+</button>
 
           {/* Mano de obra */}
           <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 12, justifyContent: isMobile ? 'space-between' : 'flex-end' }}>
