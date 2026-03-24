@@ -40,7 +40,7 @@ export default function PeritoPeritacionesPage() {
       .from('peritaciones')
       .select('*, taller:talleres(id, nombre_fantasia), compania:companias(id, nombre)')
       .eq('perito_id', session.user.id)
-      .in('estado', ['enviada', 'recibida'])
+      .in('estado', ['enviada', 'recibida', 'orden_enviada'])
       .order('created_at', { ascending: false })
 
     setPeritaciones(data || [])
@@ -72,6 +72,7 @@ export default function PeritoPeritacionesPage() {
     const map: Record<string, { label: string; bg: string; color: string }> = {
       enviada:  { label: 'Para revisar', bg: '#EDE9FE', color: '#6D28D9' },
       recibida: { label: 'Recibida ✓',   bg: '#E6FBF3', color: '#047857' },
+      orden_enviada: { label: 'Orden enviada', bg: '#EDE9FE', color: '#6D28D9' },
     }
     const s = map[estado] || { label: estado, bg: '#F0F2F5', color: '#8896A8' }
     return <span style={{ background: s.bg, color: s.color, fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20, whiteSpace: 'nowrap' }}>{s.label}</span>
@@ -124,6 +125,7 @@ async function enviarOrden(id: string) {
             <option value="">Todos los estados</option>
             <option value="enviada">Para revisar</option>
             <option value="recibida">Recibidas</option>
+            <option value="orden_enviada">Orden enviada</option>
           </select>
           <select value={filtroCompania} onChange={e => setFiltroCompania(e.target.value)}
             style={{ ...inputStyle, flex: 1, minWidth: 130 }}>
@@ -222,15 +224,20 @@ async function enviarOrden(id: string) {
                     {p.fecha_envio ? formatFecha(p.fecha_envio) : <span style={{ color: '#C8D0DC' }}>—</span>}
                   </td>
                   <td style={{ padding: '13px 16px' }}>
-                    {p.estado === 'enviada' ? (
-                      <button onClick={e => { e.stopPropagation(); confirmarRecepcion(p.id) }} disabled={confirmando === p.id}
-                        style={{ background: '#0DBF7E', color: 'white', border: 'none', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}>
-                        {confirmando === p.id ? '...' : '✓ Confirmar'}
-                      </button>
-                    ) : (
-                      <span style={{ fontSize: 12, color: '#0DBF7E', fontWeight: 600 }}>✓ Recibida</span>
-                    )}
-                  </td>
+  {p.estado === 'enviada' ? (
+    <button onClick={e => { e.stopPropagation(); confirmarRecepcion(p.id) }} disabled={confirmando === p.id}
+      style={{ background: '#0DBF7E', color: 'white', border: 'none', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}>
+      {confirmando === p.id ? '...' : '✓ Confirmar'}
+    </button>
+  ) : p.estado === 'recibida' ? (
+    <button onClick={e => { e.stopPropagation(); enviarOrden(p.id) }} disabled={confirmando === p.id}
+      style={{ background: '#7C3AED', color: 'white', border: 'none', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap' }}>
+      {confirmando === p.id ? '...' : '📤 Enviar orden'}
+    </button>
+  ) : p.estado === 'orden_enviada' ? (
+    <span style={{ fontSize: 12, color: '#6D28D9', fontWeight: 600 }}>✓ Orden enviada</span>
+  ) : null}
+</td>
                 </tr>
               ))}
             </tbody>
